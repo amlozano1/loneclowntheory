@@ -15,6 +15,25 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
     private String dbms;
     private String dbName;
     private Connection con;
+    //define table names
+    public static final String acm = "acm";
+    public static final String entityTable = "entityTable";
+    ///define columns in acm
+    public static final String subject = acm+".subject";
+    public static final String object = acm+".object";
+    public static final String read = acm+".read";
+    public static final String update = acm+".update";
+    public static final String own = acm+".own";
+    public static final String copy = acm+".copy";
+    public static final String takeReadUpdate = acm+".takeReadUpdate";
+    public static final String takeCopy = acm+".takeCopy";
+    //define columns in entityTable
+    public static final String entityID = entityTable+".entityID";
+    public static final String entityName = entityTable+".entityName";
+    public static final String subjectOrObject = entityTable+".subject_or_object";
+   
+
+
 
     public LCTAuthPolicyManager467(Connection connArg, String dbmsArg, String dbNameArg)
     {
@@ -22,6 +41,16 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
         this.con = connArg;
         this.dbms = dbmsArg;
         this.dbName = dbNameArg;
+        try
+        {
+            String query = "USE " + dbName;
+            Statement stmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+            stmt.execute(query);
+        }
+        catch(SQLException e)
+        {
+            System.out.println(e);
+        }
     }
 
     /**
@@ -32,7 +61,7 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
     public void newSubject(String subjectName)
     {
         Statement stmt = null;
-        String query = "SELECT * FROM " + dbName + ".entityTable WHERE entityName = '" + subjectName + "'";
+        String query = "SELECT * FROM " + dbName + "." + entityTable + " WHERE " + entityName +"= '" + subjectName + "'";
 
         try
         {
@@ -51,9 +80,9 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
                 {
                     rs.moveToInsertRow();
 
-                    rs.updateString("entityName", subjectName);
+                    rs.updateString(entityName, subjectName);
 
-                    rs.updateString("subject_or_object", "1");
+                    rs.updateString(subjectOrObject, "1");
 
                     rs.insertRow();
 
@@ -92,7 +121,7 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
     public void newObject(String objectName)
     {
         Statement stmt = null;
-        String query = "SELECT * FROM " + dbName + ".entityTable WHERE entityName = '" + objectName + "'";
+        String query = "SELECT * FROM " + dbName + "." + entityTable + " WHERE "+ entityName + "= '" + objectName + "'";
 
         try
         {
@@ -111,9 +140,9 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
                 {
                     rs.moveToInsertRow();
 
-                    rs.updateString("entityName", objectName);
+                    rs.updateString(entityName, objectName);
 
-                    rs.updateString("subject_or_object", "2");
+                    rs.updateString(subjectOrObject, "2");
 
                     rs.insertRow();
 
@@ -145,7 +174,7 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
     {
         Statement stmt = null;
 
-        String query = "SELECT * FROM " + dbName + ".entityTable WHERE entityName = '" + Name + "'";
+        String query = "SELECT * FROM " + dbName + "." + entityTable + " WHERE "+ entityName + "= '" + Name + "'";
 
         try
         {
@@ -185,7 +214,7 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
     {
         Statement stmt = null;
 
-        String query = "SELECT * FROM " + dbName + ".entityTable WHERE entityName = '" + Name + "'" + " AND subject_or_object <> " + "1" ;
+        String query = "SELECT * FROM " + dbName + "." + entityTable + " WHERE " + entityName + " = '" + Name + "'" + " AND "+ subjectOrObject + " <> 1" ;
 
         try
         {
@@ -219,15 +248,104 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
     /**
      * Subject X grants subject Y right R on the entity E_Name.
      *
-     * @param X       Subject granting the right
-     * @param Y       Subject being granted the right
-     * @param R       {"r", "u", "c", "o", "d", "t"}
-     * @param E_Name  The entity which subject Y will have rights
+     * @param granterName       Subject granting the right
+     * @param granteeName       Subject being granted the right
+     * @param right       {"r", "u", "c", "o", "d", "t"}
+     * @param entityName  The entity which subject Y will have rights
      * @return        "OK" on success, "NO" otherwise
      */
-    public String grant(String X, String Y, String R, String E_Name)
+    public String grant(String granter, String grantee, String right, String entity)
     {
-        return "";
+        String returnString = "NO"; //start pessimistic
+        String rightName;//string to hold the database name for the rights
+        if(right.length()!=1)//should only pass one character in the right String
+        {
+            return "NO";
+        }
+        switch(right.charAt(0))
+        {
+            case 'r':rightName = read;    break;
+            case 'u':rightName = update;  break;
+            case 'c':rightName = copy;    break;
+            case 'o':rightName = own;     break;
+            case 'e':rightName = takeCopy;break;
+            case 'd':rightName = takeReadUpdate;break;
+            default: return returnString;
+        }
+
+        //begin preparing the query database
+        try
+        {
+            int grantersID, granteesID, entitysID;
+            Statement stmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+            //get the granterID
+            String query = "SELECT " + entityID + " FROM " + entityTable + " WHERE " + entityName + "='" + granter + "';";
+            ResultSet granterName = stmt.executeQuery(query);
+            if(granterName.next())
+            {
+                grantersID = granterName.getInt(entityID);
+            }
+            else//granter does not exist so...
+            {
+                return returnString;//return NO or alternatively could throw an exception
+            }
+            //get the granteeID
+            query = "SELECT " + entityID + " FROM " + entityTable + " WHERE " + entityName + "='" + grantee + "';";
+            ResultSet granteeName = stmt.executeQuery(query);
+            if(granteeName.next())
+            {
+                granteesID = granteeName.getInt(entityID);
+            }
+            else//grantee does not exist so...
+            {
+                return returnString; //return NO or alternatively could throw an exception
+            }
+            //get the entityID
+            query = "SELECT " + entityID + " FROM " + entityTable + " WHERE " + entityName + "='" + entity + "';";
+            ResultSet entitysName = stmt.executeQuery(query);
+            if(entitysName.next())
+            {
+                entitysID = entitysName.getInt(entityID);
+            }
+            else//entity does not exist so...
+            {
+                return returnString;//return NO or alternatively could throw an exception
+            }
+            //first look up the grantee's rights
+            query = "SELECT "+ own + "," + copy +" FROM " + dbName + "." + acm + " WHERE " + subject + "='" + grantersID + "'" + " AND object='" + entitysID + "';";
+            boolean granterCanGrant = false;
+            ResultSet grantersRights = stmt.executeQuery(query);
+            if(grantersRights.next())
+            {
+                granterCanGrant = grantersRights.getBoolean(own) || grantersRights.getBoolean(copy);
+                if(granterCanGrant)//if the granter can grant
+                {
+                    if(rightName.equals(own))//if the right granter is granting is ownership we must check to make sure it is not owned by anyone or only subject0 owns it
+                    {
+
+                        query = "SELECT" + subject + " FROM " + acm + " WHERE " + object + "=" + entitysID + " AND " + own + "=" + "1;";
+                        ///SELECT subject FROM acm WHERE object = entitysID AND own = 1;
+                        ResultSet ownersOfEntity = stmt.executeQuery(query);//get all owners of the object
+                        while(ownersOfEntity.next())//for each owner in the table
+                        {
+                            if(ownersOfEntity.getInt(subject) != 1)//if the owner is not subject zero
+                            {
+                                return returnString;//there is another owner present, the operation fails
+                            }
+                        }
+                    }//if we make it out of that if and while loop we are all clear to grant the rights to grantee
+                    query = "INSERT INTO" + acm + "(" + subject + "," + object + "," +  rightName + ") VALUES (" + granteesID + "," + entitysID + "," + 1 + "ON DUPLICATE KEY UPDATE " + rightName +" = 1;";
+                            ///INSERT INTO acm (subject,object,rightName) VALUES (granteesID,entitysID,1) ON DUPLICATE KEY UPDATE rightName=1
+                    returnString = "YES";
+                }
+            }
+        }
+        catch (SQLException e)
+        {
+            System.out.println(e);
+        }
+        return returnString;
+
     }
 
     /**
