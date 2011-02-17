@@ -52,7 +52,7 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
                     rs.moveToInsertRow();
 
                     rs.updateString("entityName", subjectName);
-                    
+
                     rs.updateString("subject_or_object", "1");
 
                     rs.insertRow();
@@ -143,6 +143,36 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
      */
     public void removeSubject(String Name)
     {
+        Statement stmt = null;
+
+        String query = "SELECT * FROM " + dbName + ".entityTable WHERE entityName = '" + Name + "'";
+
+        try
+        {
+            stmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+
+            ResultSet rs = stmt.executeQuery(query);
+
+            //Precondition: Subject exist in database
+            //This also doesn't allow subject0 to be removed form the DB.
+            if (!rs.next() || Name.equals("subject0"))
+            {
+                System.out.println("No");
+            }
+            else
+            {
+                if (rs.getConcurrency() == ResultSet.CONCUR_UPDATABLE)
+                {
+                    rs.deleteRow();
+
+                    System.out.println("OK");
+                }
+            }
+         }
+         catch (SQLException e)
+         {
+             System.out.println(e);
+         }
     }
 
     /**
@@ -153,6 +183,37 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
      */
     public void removeObject(String Name)
     {
+        Statement stmt = null;
+
+        String query = "SELECT * FROM " + dbName + ".entityTable WHERE entityName = '" + Name + "'" + " AND subject_or_object <> " + "1" ;
+
+        try
+        {
+            stmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+
+            ResultSet rs = stmt.executeQuery(query);
+
+            //Precondition: Object exist in database
+            //Even though subject0 should be considered a subject_or_object which
+            //would not allow for his removale by this function it is also checked here just in case.
+            if (!rs.next() || Name.equals("subject0"))
+            {
+               System.out.println("No");
+            }
+            else
+            {
+               if (rs.getConcurrency() == ResultSet.CONCUR_UPDATABLE)
+               {
+                   rs.deleteRow();
+
+                   System.out.println("OK");
+                }
+            }
+        }
+        catch (SQLException e)
+        {
+            System.out.println(e);
+        }
     }
 
     /**

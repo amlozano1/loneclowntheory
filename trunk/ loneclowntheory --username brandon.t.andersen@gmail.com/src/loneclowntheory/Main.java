@@ -37,6 +37,33 @@ public class Main
             lct.newObject("o1");
 
             System.out.println("Done.");
+
+            Statement stmt = con.createStatement();
+
+            ResultSet result = stmt.executeQuery("SELECT * FROM " + dbName + ".entityTable");
+
+            while(result.next())
+            {
+                System.out.print(" " + result.getString("entityID"));
+                System.out.print(" " + result.getString("entityName"));
+                System.out.println(" " + result.getString("subject_or_object"));
+            }
+            result.close();
+
+            System.out.println("Attempting to remove subject0, s1 and 01");
+
+            lct.removeSubject("subject0");
+            lct.removeSubject("s1");
+            lct.removeObject("o1");
+
+            result = stmt.executeQuery("SELECT * FROM " + dbName + ".entityTable");
+            while(result.next())
+            {
+                System.out.print(" " + result.getString("entityID"));
+                System.out.print(" " + result.getString("entityName"));
+                System.out.println(" " + result.getString("subject_or_object"));
+            }
+            result.close();
         }
         catch (SQLException e)
         {
