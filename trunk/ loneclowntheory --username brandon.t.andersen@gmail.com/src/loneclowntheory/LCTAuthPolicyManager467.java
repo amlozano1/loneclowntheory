@@ -352,16 +352,17 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
      * Subject X gets right R on the entity E_Name by "taking" it from subject Y.  Subject Y's
      * rights are unmodified.
      *
-     * @param X       Subject from which the right is being taken
-     * @param Y       Subject taking the right
+     * @param X       Subject taking the right
      * @param R       {"r", "u", "c", "o", "d", "t"}
      * @param E_Name  The entity which subject Y will have rights
      * @return        "OK" on success, "NO" otherwise
      */
-    public String take(String X, String Y, String R, String E_Name)
+
+    public String take(String X, String R, String E_Name)
     {
-        return "";
+        throw new UnsupportedOperationException("Not supported yet.");
     }
+
 
     /**
      * Subject X revokes right R on the entity E_Name from subject Y.
