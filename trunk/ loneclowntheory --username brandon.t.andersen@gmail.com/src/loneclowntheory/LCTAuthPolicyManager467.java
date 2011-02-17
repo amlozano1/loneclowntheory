@@ -388,6 +388,52 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
      */
     public String checkRights(String E_Name, String X, String R)
     {
-        return "";
+        String rtnStr = "NO";
+        String right;
+
+        switch(R.charAt(0))
+        {
+            case 'r':
+                right = read;
+                break;
+            case 'u':
+                right = update;
+                break;
+            case 'c':
+                right = copy;
+                break;
+            case 'o':
+                right = own;
+                break;
+            case 'e':
+                right = takeCopy;
+                break;
+            case 'd':
+                right = takeReadUpdate;
+                break;
+            default:
+                return rtnStr;
+        }
+
+        Statement stmt = null;
+        String query = "SELECT " + subject + ", " + object + ", " + right + " FROM " + dbName + "." + acm + " WHERE " + subject + " = '" + X + "' AND " + object + " = '" + E_Name + "' AND " + right + " = 1";
+
+        try
+        {
+            stmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+
+            ResultSet rs = stmt.executeQuery(query);
+
+            if (rs.next())
+            {
+                rtnStr = "OK";
+            }
+        }
+        catch (SQLException e)
+        {
+            System.out.println(e);
+        }
+
+        return rtnStr;
     }
 }
