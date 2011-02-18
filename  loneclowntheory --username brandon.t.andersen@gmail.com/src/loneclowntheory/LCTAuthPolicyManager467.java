@@ -35,6 +35,8 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
     public static final String entityID = entityTable + ".entityID";
     public static final String entityName = entityTable + ".entityName";
     public static final String subjectOrObject = entityTable + ".subject_or_object";
+    //define other constants
+    public static final String subject0 = "subject0";
 
     public LCTAuthPolicyManager467(Connection connArg, String dbmsArg, String dbNameArg)
     {
@@ -85,7 +87,7 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
                     rs.updateString(subjectOrObject, "1");
                     rs.insertRow();
                     rs.close();
-                    
+
                     query = "INSERT INTO " + dbName + "." + acm + " (`subject`, `entity`, `granter`, `right`) VALUES ('subject0', '" + subjectName + "', 'subject0', 'o')";
                     stmt.executeUpdate(query);
                     stmt.close();
@@ -165,7 +167,7 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
 
             //Precondition: Subject exist in database
             //This also doesn't allow subject0 to be removed form the DB.
-            if (!rs.next() || Name.equals("subject0"))
+            if (!rs.next() || Name.equals(subject0))
             {
                 System.out.println("No");
             }
@@ -206,7 +208,7 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
             //Precondition: Object exist in database
             //Even though subject0 should be considered a subject_or_object which
             //would not allow for his removale by this function it is also checked here just in case.
-            if (!rs.next() || Name.equals("subject0"))
+            if (!rs.next() || Name.equals(subject0))
             {
                 System.out.println("No");
             }
@@ -368,7 +370,98 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
      */
     public String revoke(String X, String Y, String R, String E_Name, String cascades)
     {
-        String rtnStr = this.checkRights(E_Name, Y, R);
+        String rtnStr = "NO";
+
+        String revoker = X;
+        String revokee = Y;
+
+        if (revokee.equals(subject0))
+        {
+            System.out.println("ERROR: Cannot revoke subject0's rights");
+        }
+        else
+        {
+            Statement stmt = null;
+            String queryOwner = "SELECT * FROM " + dbName + "." + acm + " WHERE " + subject + " = '" + revoker + "' AND " + entity + " = '" + E_Name + "' AND " + right + " = '" + own +"'";
+            String queryRights = "SELECT * FROM " + dbName + "." + acm + " WHERE " + subject + " = '" + revokee + "' AND " + entity + " = '" + E_Name + "' AND " + right + " = '" + R + "'";
+
+            try
+            {
+                stmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+                ResultSet rsOwner = stmt.executeQuery(queryOwner);
+
+                if (rsOwner.next())
+                {
+                    ResultSet rsRights = stmt.executeQuery(queryRights);
+
+                    if (rsRights.next())
+                    {
+                        if (cascades.equals("N"))
+                        {
+                            do
+                            {
+                                rsRights.deleteRow();
+                            }
+                            while (rsRights.next());
+
+                            rtnStr = "OK";
+                        }
+                        else if (cascades.equals("C"))
+                        {
+                            if (R.equals(own) && revoker.equals(subject0))
+                            {
+                                //revoke the revokee's ownership
+
+                                //revoke any other rights on the specified entity where the granter was not subject0
+
+                            }
+                            else if(R.equals(copy))
+                            {
+                                //revoke the revokee's copy right
+
+                                //revoke any 'd', 'r', 'u', 't' where revokee is the granter for the specified entity and the subject is not the revokee
+                            }
+                            else if (R.equals(takeReadUpdate))
+                            {
+                                //revoke the revokee's 't' right
+
+                                //revoke any 'r', 'u' where revokee is the granter for the specified entity and the subject is the revokee
+                            }
+                            else if (R.equals(takeCopy))
+                            {
+                                //revoke the revokee's 'd' right
+
+                                //revoke the revokee's 'c' right where revokee is the granter for the specified entity and the subject is the revokee
+                                
+                            }
+                            else
+                            {
+                                do
+                                {
+                                    rsRights.deleteRow();
+                                }
+                                while (rsRights.next());
+
+                                rtnStr = "OK";
+                            }
+                        }
+                        else
+                        {
+                            System.out.println("Incorrect cascade parameter");
+                        }
+                    }
+
+                    rsRights.close();
+                }
+
+                rsOwner.close();
+                stmt.close();
+            }
+            catch (SQLException e)
+            {
+                System.out.println(e);
+            }
+        }
 
         return rtnStr;
     }
@@ -398,6 +491,9 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
             {
                 rtnStr = "OK";
             }
+
+            rs.close();
+            stmt.close();
         }
         catch (SQLException e)
         {
