@@ -36,6 +36,8 @@ public class Main
             lct.newSubject("s1");
             lct.newObject("o1");
 
+            lct.removeObject("o1");
+
 //            System.out.println("Done.");
 //            printEntityTable(con, dbName);
 //            printACM(con, dbName);
