@@ -14,7 +14,7 @@ CREATE  TABLE IF NOT EXISTS `LoneClownTheory`.`entityTable` (
   `entityID` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `entityName` VARCHAR(10) NOT NULL ,
   `subject_or_object` TINYINT(1)  NOT NULL ,
-  PRIMARY KEY (`entityID`, `entityName`) ,
+  PRIMARY KEY (`entityID`) ,
   UNIQUE INDEX `entityName_UNIQUE` (`entityName` ASC) )
 ENGINE = InnoDB;
 
@@ -29,8 +29,8 @@ CREATE  TABLE IF NOT EXISTS `LoneClownTheory`.`acm` (
   `entity` VARCHAR(10) NOT NULL ,
   `granter` VARCHAR(10) NOT NULL ,
   `right` VARCHAR(1) NOT NULL ,
-  `timestamp` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  PRIMARY KEY (`subject`, `entity`) ,
+  `timestamp` TIMESTAMP NOT NULL ,
+  PRIMARY KEY (`subject`, `entity`, `granter`, `right`) ,
   INDEX `entity` (`entity` ASC) ,
   INDEX `subject` (`subject` ASC) ,
   INDEX `granter` (`granter` ASC) ,
@@ -71,6 +71,6 @@ COMMIT;
 -- -----------------------------------------------------
 SET AUTOCOMMIT=0;
 USE `LoneClownTheory`;
-INSERT INTO `LoneClownTheory`.`acm` (`subject`, `entity`, `granter`, `right`, `timestamp`) VALUES ('subject0', 'subject0', 'subject0', 'o', 1);
+INSERT INTO `LoneClownTheory`.`acm` (`subject`, `entity`, `granter`, `right`, `timestamp`) VALUES ('subject0', 'subject0', 'subject0', 'o', NULL);
 
 COMMIT;

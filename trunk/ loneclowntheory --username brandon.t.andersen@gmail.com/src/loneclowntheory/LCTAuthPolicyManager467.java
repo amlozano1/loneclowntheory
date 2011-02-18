@@ -18,22 +18,23 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
     //define table names
     public static final String acm = "acm";
     public static final String entityTable = "entityTable";
-    ///define columns in acm
-    public static final String subject = acm+".subject";
-    public static final String object = acm+".object";
-    public static final String read = acm+".read";
-    public static final String update = acm+".update";
-    public static final String own = acm+".own";
-    public static final String copy = acm+".copy";
-    public static final String takeReadUpdate = acm+".takeReadUpdate";
-    public static final String takeCopy = acm+".takeCopy";
+    //define columns in acm
+    public static final String subject = acm + ".subject";
+    public static final String entity = acm + ".entity";
+    public static final String granter = acm + ".granter";
+    public static final String right = acm + ".right";
+    public static final String timestamp = acm + ".timestamp";
+    //define rights for acm
+    public static final String read = "r";
+    public static final String update = "u";
+    public static final String own = "o";
+    public static final String copy = "c";
+    public static final String takeReadUpdate = "t";
+    public static final String takeCopy = "d";
     //define columns in entityTable
-    public static final String entityID = entityTable+".entityID";
-    public static final String entityName = entityTable+".entityName";
-    public static final String subjectOrObject = entityTable+".subject_or_object";
-   
-
-
+    public static final String entityID = entityTable + ".entityID";
+    public static final String entityName = entityTable + ".entityName";
+    public static final String subjectOrObject = entityTable + ".subject_or_object";
 
     public LCTAuthPolicyManager467(Connection connArg, String dbmsArg, String dbNameArg)
     {
@@ -46,8 +47,9 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
             String query = "USE " + dbName;
             Statement stmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
             stmt.execute(query);
+            con.setAutoCommit(true);
         }
-        catch(SQLException e)
+        catch (SQLException e)
         {
             System.out.println(e);
         }
@@ -61,7 +63,7 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
     public void newSubject(String subjectName)
     {
         Statement stmt = null;
-        String query = "SELECT * FROM " + dbName + "." + entityTable + " WHERE " + entityName +"= '" + subjectName + "'";
+        String query = "SELECT * FROM " + dbName + "." + entityTable + " WHERE " + entityName + "= '" + subjectName + "'";
 
         try
         {
@@ -79,19 +81,13 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
                 if (rs.getConcurrency() == ResultSet.CONCUR_UPDATABLE)
                 {
                     rs.moveToInsertRow();
-
                     rs.updateString(entityName, subjectName);
-
                     rs.updateString(subjectOrObject, "1");
-
                     rs.insertRow();
-
                     rs.close();
-
-//                    query = "INSERT INTO " + dbName + ".entityTable (entityName, subject_or_object) VALUES ('" + subjectName + "', 2)";
-//
-//                    stmt.executeUpdate(query);
-
+                    
+                    query = "INSERT INTO " + dbName + "." + acm + " (`subject`, `entity`, `granter`, `right`) VALUES ('subject0', '" + subjectName + "', 'subject0', 'o')";
+                    stmt.executeUpdate(query);
                     stmt.close();
 
                     System.out.println("OK");
@@ -102,15 +98,6 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
         {
             System.out.println(e);
         }
-
-        //Create the subject
-
-        //Postconditions:
-        //1 - subject added to Subjects and Objects
-        //2 - the subject has no rights and no entities have rights on the subject
-        //3 - all other rights remain unchanged
-
-        //Assign subject0 as the owner of the new subject
     }
 
     /**
@@ -121,7 +108,7 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
     public void newObject(String objectName)
     {
         Statement stmt = null;
-        String query = "SELECT * FROM " + dbName + "." + entityTable + " WHERE "+ entityName + "= '" + objectName + "'";
+        String query = "SELECT * FROM " + dbName + "." + entityTable + " WHERE " + entityName + "= '" + objectName + "'";
 
         try
         {
@@ -139,19 +126,13 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
                 if (rs.getConcurrency() == ResultSet.CONCUR_UPDATABLE)
                 {
                     rs.moveToInsertRow();
-
                     rs.updateString(entityName, objectName);
-
-                    rs.updateString(subjectOrObject, "2");
-
+                    rs.updateString(subjectOrObject, "0");
                     rs.insertRow();
-
                     rs.close();
 
-//                    query = "INSERT INTO " + dbName + ".entityTable (entityName, subject_or_object) VALUES ('" + subjectName + "', 2)";
-//
-//                    stmt.executeUpdate(query);
-
+                    query = "INSERT INTO " + dbName + "." + acm + " (`subject`, `entity`, `granter`, `right`) VALUES ('subject0', '" + objectName + "', 'subject0', 'o')";
+                    stmt.executeUpdate(query);
                     stmt.close();
 
                     System.out.println("OK");
@@ -174,7 +155,7 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
     {
         Statement stmt = null;
 
-        String query = "SELECT * FROM " + dbName + "." + entityTable + " WHERE "+ entityName + "= '" + Name + "'";
+        String query = "SELECT * FROM " + dbName + "." + entityTable + " WHERE " + entityName + "= '" + Name + "'";
 
         try
         {
@@ -197,11 +178,11 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
                     System.out.println("OK");
                 }
             }
-         }
-         catch (SQLException e)
-         {
-             System.out.println(e);
-         }
+        }
+        catch (SQLException e)
+        {
+            System.out.println(e);
+        }
     }
 
     /**
@@ -214,7 +195,7 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
     {
         Statement stmt = null;
 
-        String query = "SELECT * FROM " + dbName + "." + entityTable + " WHERE " + entityName + " = '" + Name + "'" + " AND "+ subjectOrObject + " <> 1" ;
+        String query = "SELECT * FROM " + dbName + "." + entityTable + " WHERE " + entityName + " = '" + Name + "'" + " AND " + subjectOrObject + " <> 1";
 
         try
         {
@@ -227,15 +208,15 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
             //would not allow for his removale by this function it is also checked here just in case.
             if (!rs.next() || Name.equals("subject0"))
             {
-               System.out.println("No");
+                System.out.println("No");
             }
             else
             {
-               if (rs.getConcurrency() == ResultSet.CONCUR_UPDATABLE)
-               {
-                   rs.deleteRow();
+                if (rs.getConcurrency() == ResultSet.CONCUR_UPDATABLE)
+                {
+                    rs.deleteRow();
 
-                   System.out.println("OK");
+                    System.out.println("OK");
                 }
             }
         }
@@ -258,19 +239,32 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
     {
         String returnString = "NO"; //start pessimistic
         String rightName;//string to hold the database name for the rights
-        if(right.length()!=1)//should only pass one character in the right String
+        if (right.length() != 1)//should only pass one character in the right String
         {
             return "NO";
         }
-        switch(right.charAt(0))
+        switch (right.charAt(0))
         {
-            case 'r':rightName = read;    break;
-            case 'u':rightName = update;  break;
-            case 'c':rightName = copy;    break;
-            case 'o':rightName = own;     break;
-            case 'e':rightName = takeCopy;break;
-            case 'd':rightName = takeReadUpdate;break;
-            default: return returnString;
+            case 'r':
+                rightName = read;
+                break;
+            case 'u':
+                rightName = update;
+                break;
+            case 'c':
+                rightName = copy;
+                break;
+            case 'o':
+                rightName = own;
+                break;
+            case 'e':
+                rightName = takeCopy;
+                break;
+            case 'd':
+                rightName = takeReadUpdate;
+                break;
+            default:
+                return returnString;
         }
 
         //begin preparing the query database
@@ -281,7 +275,7 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
             //get the granterID
             String query = "SELECT " + entityID + " FROM " + entityTable + " WHERE " + entityName + "='" + granter + "';";
             ResultSet granterName = stmt.executeQuery(query);
-            if(granterName.next())
+            if (granterName.next())
             {
                 grantersID = granterName.getInt(entityID);
             }
@@ -292,7 +286,7 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
             //get the granteeID
             query = "SELECT " + entityID + " FROM " + entityTable + " WHERE " + entityName + "='" + grantee + "';";
             ResultSet granteeName = stmt.executeQuery(query);
-            if(granteeName.next())
+            if (granteeName.next())
             {
                 granteesID = granteeName.getInt(entityID);
             }
@@ -303,7 +297,7 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
             //get the entityID
             query = "SELECT " + entityID + " FROM " + entityTable + " WHERE " + entityName + "='" + entity + "';";
             ResultSet entitysName = stmt.executeQuery(query);
-            if(entitysName.next())
+            if (entitysName.next())
             {
                 entitysID = entitysName.getInt(entityID);
             }
@@ -312,30 +306,30 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
                 return returnString;//return NO or alternatively could throw an exception
             }
             //first look up the grantee's rights
-            query = "SELECT "+ own + "," + copy +" FROM " + dbName + "." + acm + " WHERE " + subject + "='" + grantersID + "'" + " AND object='" + entitysID + "';";
+            query = "SELECT " + own + "," + copy + " FROM " + dbName + "." + acm + " WHERE " + subject + "='" + grantersID + "'" + " AND object='" + entitysID + "';";
             boolean granterCanGrant = false;
             ResultSet grantersRights = stmt.executeQuery(query);
-            if(grantersRights.next())
+            if (grantersRights.next())
             {
                 granterCanGrant = grantersRights.getBoolean(own) || grantersRights.getBoolean(copy);
-                if(granterCanGrant)//if the granter can grant
+                if (granterCanGrant)//if the granter can grant
                 {
-                    if(rightName.equals(own))//if the right granter is granting is ownership we must check to make sure it is not owned by anyone or only subject0 owns it
+                    if (rightName.equals(own))//if the right granter is granting is ownership we must check to make sure it is not owned by anyone or only subject0 owns it
                     {
 
-                        query = "SELECT" + subject + " FROM " + acm + " WHERE " + object + "=" + entitysID + " AND " + own + "=" + "1;";
+                        query = "SELECT" + subject + " FROM " + acm + " WHERE " + entity + "=" + entitysID + " AND " + own + "=" + "1;";
                         ///SELECT subject FROM acm WHERE object = entitysID AND own = 1;
                         ResultSet ownersOfEntity = stmt.executeQuery(query);//get all owners of the object
-                        while(ownersOfEntity.next())//for each owner in the table
+                        while (ownersOfEntity.next())//for each owner in the table
                         {
-                            if(ownersOfEntity.getInt(subject) != 1)//if the owner is not subject zero
+                            if (ownersOfEntity.getInt(subject) != 1)//if the owner is not subject zero
                             {
                                 return returnString;//there is another owner present, the operation fails
                             }
                         }
                     }//if we make it out of that if and while loop we are all clear to grant the rights to grantee
-                    query = "INSERT INTO" + acm + "(" + subject + "," + object + "," +  rightName + ") VALUES (" + granteesID + "," + entitysID + "," + 1 + "ON DUPLICATE KEY UPDATE " + rightName +" = 1;";
-                            ///INSERT INTO acm (subject,object,rightName) VALUES (granteesID,entitysID,1) ON DUPLICATE KEY UPDATE rightName=1
+                    query = "INSERT INTO" + acm + "(" + subject + "," + entity + "," + rightName + ") VALUES (" + granteesID + "," + entitysID + "," + 1 + "ON DUPLICATE KEY UPDATE " + rightName + " = 1;";
+                    ///INSERT INTO acm (subject,object,rightName) VALUES (granteesID,entitysID,1) ON DUPLICATE KEY UPDATE rightName=1
                     returnString = "YES";
                 }
             }
@@ -357,12 +351,10 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
      * @param E_Name  The entity which subject Y will have rights
      * @return        "OK" on success, "NO" otherwise
      */
-
     public String take(String X, String R, String E_Name)
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }
-
 
     /**
      * Subject X revokes right R on the entity E_Name from subject Y.
@@ -392,7 +384,7 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
         String rtnStr = "NO";
         String right;
 
-        switch(R.charAt(0))
+        switch (R.charAt(0))
         {
             case 'r':
                 right = read;
@@ -417,7 +409,7 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
         }
 
         Statement stmt = null;
-        String query = "SELECT " + subject + ", " + object + ", " + right + " FROM " + dbName + "." + acm + " WHERE " + subject + " = '" + X + "' AND " + object + " = '" + E_Name + "' AND " + right + " = 1";
+        String query = "SELECT " + subject + ", " + entity + ", " + right + " FROM " + dbName + "." + acm + " WHERE " + subject + " = '" + X + "' AND " + entity + " = '" + E_Name + "' AND " + right + " = 1";
 
         try
         {
