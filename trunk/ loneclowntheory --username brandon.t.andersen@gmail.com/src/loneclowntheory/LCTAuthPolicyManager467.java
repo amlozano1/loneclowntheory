@@ -382,7 +382,7 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
         else
         {
             Statement stmt = null;
-            String queryOwner = "SELECT * FROM " + dbName + "." + acm + " WHERE " + subject + " = '" + revoker + "' AND " + entity + " = '" + E_Name + "' AND " + right + " = '" + own +"'";
+            String queryOwner = "SELECT * FROM " + dbName + "." + acm + " WHERE " + subject + " = '" + revoker + "' AND " + entity + " = '" + E_Name + "' AND " + right + " = '" + own + "'";
             String queryRights = "SELECT * FROM " + dbName + "." + acm + " WHERE " + subject + " = '" + revokee + "' AND " + entity + " = '" + E_Name + "' AND " + right + " = '" + R + "'";
 
             try
@@ -411,28 +411,110 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
                             if (R.equals(own) && revoker.equals(subject0))
                             {
                                 //revoke the revokee's ownership
+                                do
+                                {
+                                    rsRights.deleteRow();
+                                }
+                                while (rsRights.next());
 
                                 //revoke any other rights on the specified entity where the granter was not subject0
+                                queryRights = "SELECT * FROM " + dbName + "." + acm + 
+                                            " WHERE " + granter + " <> '" + subject0 +
+                                            "' AND " + entity + " = '" + E_Name + "'";
+                                rsRights = stmt.executeQuery(queryRights);
 
+                                if (rsRights.next())
+                                {
+                                    do
+                                    {
+                                        rsRights.deleteRow();
+                                    }
+                                    while (rsRights.next());
+                                }
+
+                                rtnStr = "OK";
                             }
-                            else if(R.equals(copy))
+                            else if (R.equals(copy))
                             {
                                 //revoke the revokee's copy right
+                                do
+                                {
+                                    rsRights.deleteRow();
+                                }
+                                while (rsRights.next());
 
                                 //revoke any 'd', 'r', 'u', 't' where revokee is the granter for the specified entity and the subject is not the revokee
+                                queryRights = "SELECT * FROM " + dbName + "." + acm +
+                                            " WHERE " + subject + " <> " + revokee +
+                                            " AND " + granter + " = '" + revokee +
+                                            "' AND " + entity + " = '" + E_Name + "'";
+                                rsRights = stmt.executeQuery(queryRights);
+
+                                if (rsRights.next())
+                                {
+                                    do
+                                    {
+                                        this.revoke(revokee, rsRights.getString(subject), rsRights.getString(right), rsRights.getString(entity), "C");
+                                    }
+                                    while (rsRights.next());
+                                }
+
+                                rtnStr = "OK";
                             }
                             else if (R.equals(takeReadUpdate))
                             {
                                 //revoke the revokee's 't' right
+                                do
+                                {
+                                    rsRights.deleteRow();
+                                }
+                                while (rsRights.next());
 
                                 //revoke any 'r', 'u' where revokee is the granter for the specified entity and the subject is the revokee
+                                queryRights = "SELECT * FROM " + dbName + "." + acm +
+                                            " WHERE " + subject + " = " + revokee +
+                                            " AND " + granter + " = '" + revokee +
+                                            "' AND " + entity + " = '" + E_Name +
+                                            "' AND (" + right + " = '" + read +
+                                            "' OR " + right + " = '" + update + "')";
+                                rsRights = stmt.executeQuery(queryRights);
+
+                                if (rsRights.next())
+                                {
+                                    do
+                                    {
+                                        rsRights.deleteRow();
+                                    }
+                                    while (rsRights.next());
+                                }
                             }
                             else if (R.equals(takeCopy))
                             {
                                 //revoke the revokee's 'd' right
+                                do
+                                {
+                                    rsRights.deleteRow();
+                                }
+                                while (rsRights.next());
 
                                 //revoke the revokee's 'c' right where revokee is the granter for the specified entity and the subject is the revokee
-                                
+                                queryRights = "SELECT * FROM " + dbName + "." + acm +
+                                            " WHERE " + subject + " <> " + revokee +
+                                            " AND " + granter + " = '" + revokee +
+                                            "' AND " + entity + " = '" + E_Name +
+                                            "' AND " + right + " = '" + copy + "'";
+                                rsRights = stmt.executeQuery(queryRights);
+
+                                if (rsRights.next())
+                                {
+                                    do
+                                    {
+                                        this.revoke(revokee, rsRights.getString(subject), rsRights.getString(right), rsRights.getString(entity), "C");
+                                    }
+                                    while (rsRights.next());
+                                }
+
+                                rtnStr = "OK";
                             }
                             else
                             {
