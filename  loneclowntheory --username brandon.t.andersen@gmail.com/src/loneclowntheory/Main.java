@@ -36,7 +36,10 @@ public class Main
             lct.newSubject("s1");
             lct.newObject("o1");
 
-            lct.removeObject("o1");
+            System.out.println(lct.checkRights("s1", "subject0", "o"));
+            System.out.println(lct.checkRights("o1", "subject0", "o"));
+            System.out.println(lct.checkRights("o1", "subject0", "r"));
+            System.out.println(lct.revoke("subject0", "subject0", "o", "s1", "N"));
 
 //            System.out.println("Done.");
 //            printEntityTable(con, dbName);

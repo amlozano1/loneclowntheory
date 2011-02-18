@@ -368,7 +368,9 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
      */
     public String revoke(String X, String Y, String R, String E_Name, String cascades)
     {
-        return "";
+        String rtnStr = this.checkRights(E_Name, Y, R);
+
+        return rtnStr;
     }
 
     /**
@@ -382,34 +384,9 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
     public String checkRights(String E_Name, String X, String R)
     {
         String rtnStr = "NO";
-        String right;
-
-        switch (R.charAt(0))
-        {
-            case 'r':
-                right = read;
-                break;
-            case 'u':
-                right = update;
-                break;
-            case 'c':
-                right = copy;
-                break;
-            case 'o':
-                right = own;
-                break;
-            case 'e':
-                right = takeCopy;
-                break;
-            case 'd':
-                right = takeReadUpdate;
-                break;
-            default:
-                return rtnStr;
-        }
 
         Statement stmt = null;
-        String query = "SELECT " + subject + ", " + entity + ", " + right + " FROM " + dbName + "." + acm + " WHERE " + subject + " = '" + X + "' AND " + entity + " = '" + E_Name + "' AND " + right + " = 1";
+        String query = "SELECT " + subject + ", " + entity + ", " + right + " FROM " + dbName + "." + acm + " WHERE " + subject + " = '" + X + "' AND " + entity + " = '" + E_Name + "' AND " + right + " = '" + R + "'";
 
         try
         {
