@@ -18,19 +18,12 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
     //define table names
     public static final String acm = "acm";
     public static final String entityTable = "entityTable";
-    //define columns in acm
-    public static final String subject = acm + ".subject";
-    public static final String entity = acm + ".entity";
-    public static final String granter = acm + ".granter";
-    public static final String right = acm + ".right";
-    public static final String timestamp = acm + ".timestamp";
-    //define rights for acm
-    public static final String read = "r";
-    public static final String update = "u";
-    public static final String own = "o";
-    public static final String copy = "c";
-    public static final String takeReadUpdate = "t";
-    public static final String takeCopy = "d";
+    ///define columns in acm
+    public static final String subject = acm+".subject";
+    public static final String entity = acm+".entity";
+    public static final String right = acm+".right";
+    public static final String granter = acm+".granter";
+    public static final String timestamp = acm+".timestamp";
     //define columns in entityTable
     public static final String entityID = entityTable + ".entityID";
     public static final String entityName = entityTable + ".entityName";
@@ -229,112 +222,37 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
     }
 
     /**
-     * Subject X grants subject Y right R on the entity E_Name.
+     * Subject granterName grants subject granteeName right righToBeGranted  on the entityName.
      *
      * @param granterName       Subject granting the right
      * @param granteeName       Subject being granted the right
-     * @param right       {"r", "u", "c", "o", "d", "t"}
+     * @param righToBeGranted      {"r", "u", "c", "o", "d", "t"}
      * @param entityName  The entity which subject Y will have rights
      * @return        "OK" on success, "NO" otherwise
      */
-    public String grant(String granter, String grantee, String right, String entity)
+    public String grant(String granterGranting, String grantee, String rightToBeGranted, String entityGrantedOn)
     {
         String returnString = "NO"; //start pessimistic
         String rightName;//string to hold the database name for the rights
-        if (right.length() != 1)//should only pass one character in the right String
+        if(rightToBeGranted.length()!=1)//should only pass one character in the right String
         {
             return "NO";
         }
-        switch (right.charAt(0))
-        {
-            case 'r':
-                rightName = read;
-                break;
-            case 'u':
-                rightName = update;
-                break;
-            case 'c':
-                rightName = copy;
-                break;
-            case 'o':
-                rightName = own;
-                break;
-            case 'e':
-                rightName = takeCopy;
-                break;
-            case 'd':
-                rightName = takeReadUpdate;
-                break;
-            default:
-                return returnString;
-        }
-
         //begin preparing the query database
         try
         {
-            int grantersID, granteesID, entitysID;
             Statement stmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
-            //get the granterID
-            String query = "SELECT " + entityID + " FROM " + entityTable + " WHERE " + entityName + "='" + granter + "';";
-            ResultSet granterName = stmt.executeQuery(query);
-            if (granterName.next())
+            // look up the grantee's rights
+            if(checkRights(entityGrantedOn,granterGranting,"o").equals("OK") ||//if the granter is the owner OR the granter has the rights and has the copy right
+                    checkRights(entityGrantedOn,granterGranting,rightToBeGranted).equals("OK") && checkRights(entityGrantedOn,granterGranting,"c").equals("OK"))
             {
-                grantersID = granterName.getInt(entityID);
+                String query = "INSERT INTO" + acm + "(" + subject + "," + entity + "," +  right + "," + granter + ")" +
+                        " VALUES (" + grantee + "," + entityGrantedOn + "," + rightToBeGranted +","+granterGranting + ")" +
+                        "ON DUPLICATE KEY UPDATE" + timestamp + "= LAST_INSERT_ID("+ timestamp +")";
+                        
+            ///INSERT INTO acm (subject,entity,right,granter) VALUES (grantee,entityGrantedOn,right,granter)
             }
-            else//granter does not exist so...
-            {
-                return returnString;//return NO or alternatively could throw an exception
-            }
-            //get the granteeID
-            query = "SELECT " + entityID + " FROM " + entityTable + " WHERE " + entityName + "='" + grantee + "';";
-            ResultSet granteeName = stmt.executeQuery(query);
-            if (granteeName.next())
-            {
-                granteesID = granteeName.getInt(entityID);
-            }
-            else//grantee does not exist so...
-            {
-                return returnString; //return NO or alternatively could throw an exception
-            }
-            //get the entityID
-            query = "SELECT " + entityID + " FROM " + entityTable + " WHERE " + entityName + "='" + entity + "';";
-            ResultSet entitysName = stmt.executeQuery(query);
-            if (entitysName.next())
-            {
-                entitysID = entitysName.getInt(entityID);
-            }
-            else//entity does not exist so...
-            {
-                return returnString;//return NO or alternatively could throw an exception
-            }
-            //first look up the grantee's rights
-            query = "SELECT " + own + "," + copy + " FROM " + dbName + "." + acm + " WHERE " + subject + "='" + grantersID + "'" + " AND object='" + entitysID + "';";
-            boolean granterCanGrant = false;
-            ResultSet grantersRights = stmt.executeQuery(query);
-            if (grantersRights.next())
-            {
-                granterCanGrant = grantersRights.getBoolean(own) || grantersRights.getBoolean(copy);
-                if (granterCanGrant)//if the granter can grant
-                {
-                    if (rightName.equals(own))//if the right granter is granting is ownership we must check to make sure it is not owned by anyone or only subject0 owns it
-                    {
-
-                        query = "SELECT" + subject + " FROM " + acm + " WHERE " + entity + "=" + entitysID + " AND " + own + "=" + "1;";
-                        ///SELECT subject FROM acm WHERE object = entitysID AND own = 1;
-                        ResultSet ownersOfEntity = stmt.executeQuery(query);//get all owners of the object
-                        while (ownersOfEntity.next())//for each owner in the table
-                        {
-                            if (ownersOfEntity.getInt(subject) != 1)//if the owner is not subject zero
-                            {
-                                return returnString;//there is another owner present, the operation fails
-                            }
-                        }
-                    }//if we make it out of that if and while loop we are all clear to grant the rights to grantee
-                    query = "INSERT INTO" + acm + "(" + subject + "," + entity + "," + rightName + ") VALUES (" + granteesID + "," + entitysID + "," + 1 + "ON DUPLICATE KEY UPDATE " + rightName + " = 1;";
-                    ///INSERT INTO acm (subject,object,rightName) VALUES (granteesID,entitysID,1) ON DUPLICATE KEY UPDATE rightName=1
-                    returnString = "YES";
-                }
-            }
+            returnString = "YES";
         }
         catch (SQLException e)
         {
@@ -345,17 +263,53 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
     }
 
     /**
-     * Subject X gets right R on the entity E_Name by "taking" it from subject Y.  Subject Y's
+     * Subject X gets right R on the entityToTakeRightsOn by "taking" it from
+     * subject Y if subject Y has given them the appropriate take right.  Subject Y's
      * rights are unmodified.
      *
-     * @param X       Subject taking the right
-     * @param R       {"r", "u", "c", "o", "d", "t"}
-     * @param E_Name  The entity which subject Y will have rights
+     * @param subjectTaking       Subject taking the right
+     * @param rightToTake       {"r", "u", "c", "o", "d", "t"}
+     * @param entityToTakeRightsOn  The entity which subject Y will have rights
      * @return        "OK" on success, "NO" otherwise
      */
-    public String take(String X, String R, String E_Name)
+    public String take(String subjectTaking, String rightToTake, String entityToTakeRightsOn)
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        String returnString = "NO";//start pessimistic
+        try
+        {
+        Statement stmt = con.createStatement();
+        String query = "INSERT INTO" + acm + "(" + subject + "," + entity + "," +  right + "," + granter + ")" +
+                        " VALUES (" + subjectTaking + "," + entityToTakeRightsOn + "," + rightToTake +","+subjectTaking + ")" +
+                        "ON DUPLICATE KEY UPDATE" + timestamp + "= LAST_INSERT_ID("+ timestamp +")";
+
+            switch(rightToTake.charAt(0))
+            {
+                case 'r':
+                case 'u':
+                {
+                    if("OK".equals(checkRights(entityToTakeRightsOn, subjectTaking, "c")))
+                    {
+                        stmt.executeQuery(query);
+                        returnString = "OK";
+                    }
+                }break;
+                case 'c':
+                {
+                    if("OK".equals(checkRights(entityToTakeRightsOn, subjectTaking, "d")))
+                    {
+                        stmt.executeQuery(query);
+                        returnString = "OK";
+                    }
+                }break;
+                default:break;
+
+            }
+        }
+        catch (SQLException e)
+        {
+            System.out.println(e);
+        }
+        return returnString;
     }
 
     /**
@@ -382,8 +336,8 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
         else
         {
             Statement stmt = null;
-            String queryOwner = "SELECT * FROM " + dbName + "." + acm + " WHERE " + subject + " = '" + revoker + "' AND " + entity + " = '" + E_Name + "' AND " + right + " = '" + own + "'";
-            String queryRights = "SELECT * FROM " + dbName + "." + acm + " WHERE " + subject + " = '" + revokee + "' AND " + entity + " = '" + E_Name + "' AND " + right + " = '" + R + "'";
+            String queryOwner = "SELECT * FROM " + dbName + "." + acm + " WHERE " + subject + " = '" + revoker + "' AND " + entity + " = '" + E_Name + "' AND " + right + " = 'o'";
+            String queryRights = "SELECT * FROM " + dbName + "." + acm + " WHERE " + subject + " = '" + revokee + "' AND " + entity + " = '" + E_Name + "' AND " + right + " = 'r'";
 
             try
             {
@@ -408,7 +362,7 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
                         }
                         else if (cascades.equals("C"))
                         {
-                            if (R.equals(own) && revoker.equals(subject0))
+                            if (R.equals("o") && revoker.equals(subject0))
                             {
                                 //revoke the revokee's ownership
                                 do
@@ -434,7 +388,7 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
 
                                 rtnStr = "OK";
                             }
-                            else if (R.equals(copy))
+                            else if (R.equals("c"))
                             {
                                 //revoke the revokee's copy right
                                 do
@@ -461,7 +415,7 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
 
                                 rtnStr = "OK";
                             }
-                            else if (R.equals(takeReadUpdate))
+                            else if (R.equals("t"))
                             {
                                 //revoke the revokee's 't' right
                                 do
@@ -475,8 +429,8 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
                                             " WHERE " + subject + " = " + revokee +
                                             " AND " + granter + " = '" + revokee +
                                             "' AND " + entity + " = '" + E_Name +
-                                            "' AND (" + right + " = '" + read +
-                                            "' OR " + right + " = '" + update + "')";
+                                            "' AND (" + right + " = '" + "r" +
+                                            "' OR " + right + " = '" + "u" + "')";
                                 rsRights = stmt.executeQuery(queryRights);
 
                                 if (rsRights.next())
@@ -488,7 +442,7 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
                                     while (rsRights.next());
                                 }
                             }
-                            else if (R.equals(takeCopy))
+                            else if (R.equals("d"))
                             {
                                 //revoke the revokee's 'd' right
                                 do
@@ -502,7 +456,7 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
                                             " WHERE " + subject + " <> " + revokee +
                                             " AND " + granter + " = '" + revokee +
                                             "' AND " + entity + " = '" + E_Name +
-                                            "' AND " + right + " = '" + copy + "'";
+                                            "' AND " + right + " = 'c'";
                                 rsRights = stmt.executeQuery(queryRights);
 
                                 if (rsRights.next())
