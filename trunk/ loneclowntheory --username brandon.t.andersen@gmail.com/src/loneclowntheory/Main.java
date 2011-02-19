@@ -34,11 +34,16 @@ public class Main
             lct = new LCTAuthPolicyManager467(con, dbms, dbName);
 
             lct.newSubject("s1");
+            lct.newSubject("s2");
             lct.newObject("o1");
 
             System.out.println(lct.checkRights("s1", "subject0", "o"));
             System.out.println(lct.checkRights("o1", "subject0", "o"));
             System.out.println(lct.checkRights("o1", "subject0", "r"));
+            System.out.println(lct.grant("subject0","s1","o","o1"));
+            System.out.println(lct.grant("s1","s2","t","o1"));
+            System.out.println(lct.take("s2", "r", "o1"));
+            System.out.println(lct.checkRights("s1", "o1", "o"));
             System.out.println(lct.revoke("subject0", "subject0", "o", "s1", "N"));
 
 //            System.out.println("Done.");

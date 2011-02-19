@@ -246,10 +246,9 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
             if(checkRights(entityGrantedOn,granterGranting,"o").equals("OK") ||//if the granter is the owner OR the granter has the rights and has the copy right
                     checkRights(entityGrantedOn,granterGranting,rightToBeGranted).equals("OK") && checkRights(entityGrantedOn,granterGranting,"c").equals("OK"))
             {
-                String query = "INSERT INTO" + acm + "(" + subject + "," + entity + "," +  right + "," + granter + ")" +
-                        " VALUES (" + grantee + "," + entityGrantedOn + "," + rightToBeGranted +","+granterGranting + ")" +
-                        "ON DUPLICATE KEY UPDATE" + timestamp + "= LAST_INSERT_ID("+ timestamp +")";
-                        
+                String query = "INSERT INTO " + acm + " (" + subject + " ," + entity + " ," +  right + " ," + granter + ")" +
+                        " VALUES ('" + grantee + "', '" + entityGrantedOn + "', '" + rightToBeGranted +"', '"+granterGranting + "');";
+                stmt.execute(query);
             ///INSERT INTO acm (subject,entity,right,granter) VALUES (grantee,entityGrantedOn,right,granter)
             }
             returnString = "YES";
@@ -278,18 +277,17 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
         try
         {
         Statement stmt = con.createStatement();
-        String query = "INSERT INTO" + acm + "(" + subject + "," + entity + "," +  right + "," + granter + ")" +
-                        " VALUES (" + subjectTaking + "," + entityToTakeRightsOn + "," + rightToTake +","+subjectTaking + ")" +
-                        "ON DUPLICATE KEY UPDATE" + timestamp + "= LAST_INSERT_ID("+ timestamp +")";
+        String query = "INSERT INTO " + acm + " (" + subject + ", " + entity + ", " +  right + ", " + granter + ")" +
+                        " VALUES ('" + subjectTaking + "', '" + entityToTakeRightsOn + "', '" + rightToTake +"', '"+subjectTaking + "');";
 
             switch(rightToTake.charAt(0))
             {
                 case 'r':
                 case 'u':
                 {
-                    if("OK".equals(checkRights(entityToTakeRightsOn, subjectTaking, "c")))
+                    if("OK".equals(checkRights(entityToTakeRightsOn, subjectTaking, "t")))
                     {
-                        stmt.executeQuery(query);
+                        stmt.execute(query);
                         returnString = "OK";
                     }
                 }break;
@@ -297,7 +295,7 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
                 {
                     if("OK".equals(checkRights(entityToTakeRightsOn, subjectTaking, "d")))
                     {
-                        stmt.executeQuery(query);
+                        stmt.execute(query);
                         returnString = "OK";
                     }
                 }break;
