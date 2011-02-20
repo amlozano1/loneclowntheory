@@ -24,6 +24,13 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
     public static final String right = acm+".right";
     public static final String granter = acm+".granter";
     public static final String timestamp = acm+".timestamp";
+    //define rights for acm
+    public static final String read = "r";
+    public static final String update = "u";
+    public static final String own = "o";
+    public static final String copy = "c";
+    public static final String takeReadUpdate = "t";
+    public static final String takeCopy = "d";
     //define columns in entityTable
     public static final String entityID = entityTable + ".entityID";
     public static final String entityName = entityTable + ".entityName";
