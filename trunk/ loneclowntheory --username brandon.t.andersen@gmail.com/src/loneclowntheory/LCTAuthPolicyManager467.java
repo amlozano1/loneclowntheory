@@ -428,10 +428,10 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
                             while (rs.next());
 
                             // Revoke any 'c' from revokee on the given entity
-                            if (cascade)
-                            {
-                                this.revoke(X, Y, copy, E_Name, cascades);
-                            }
+//                            if (cascade)
+//                            {
+//                                this.revoke(X, Y, copy, E_Name, cascades);
+//                            }
 
                             rtnStr = "OK";
                         }
@@ -444,11 +444,11 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
                             }
                             while (rs.next());
 
-                            if (cascade)
-                            {
-                                this.revoke(X, Y, read, E_Name, cascades);
-                                this.revoke(X, Y, update, E_Name, cascades);
-                            }
+//                            if (cascade)
+//                            {
+//                                this.revoke(X, Y, read, E_Name, cascades);
+//                                this.revoke(X, Y, update, E_Name, cascades);
+//                            }
 
                             rtnStr = "OK";
                         }
@@ -589,8 +589,8 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
                     }
                     while (rs.next());
 
-                    // Revoke 'c' from revokee where granter is revoker
-                    this.cascadeRevoke(revoker, revokee, copy, E_Name);
+//                    // Revoke 'c' from revokee where granter is revoker
+//                    this.cascadeRevoke(revoker, revokee, copy, E_Name);
 
                     rtnStr = "OK";
                 }
@@ -603,9 +603,9 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
                     }
                     while (rs.next());
 
-                    // Revoke 'r' and 'u' from revokee where granter is revoker
-                    this.cascadeRevoke(revoker, revokee, read, E_Name);
-                    this.cascadeRevoke(revoker, revokee, update, E_Name);
+//                    // Revoke 'r' and 'u' from revokee where granter is revoker
+//                    this.cascadeRevoke(revoker, revokee, read, E_Name);
+//                    this.cascadeRevoke(revoker, revokee, update, E_Name);
 
                     rtnStr = "OK";
                 }
