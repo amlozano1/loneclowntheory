@@ -427,10 +427,11 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
                                 }
 
                                 // Revoke ownership from revokee on the given entity
-                                while (rs.next())
+                                do
                                 {
                                     rs.deleteRow();
                                 }
+                                while (rs.next());
 
                                 rtnStr = "OK";
                             }
