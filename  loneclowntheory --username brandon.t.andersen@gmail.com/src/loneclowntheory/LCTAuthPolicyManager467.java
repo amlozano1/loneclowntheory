@@ -155,24 +155,45 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
      */
     public void removeSubject(String Name)
     {
-        Statement stmt = null;
+        Statement stmtEntity = null;
+        Statement stmtRights = null;
 
-        String query = "SELECT * FROM " + dbName + "." + entityTable + " WHERE " + entityName + "= '" + Name + "'";
+        String query = "SELECT * FROM " + dbName + "." + entityTable
+                + " WHERE " + entityName + " = '" + Name
+                + "' AND " + subjectOrObject + " = 1";
+
+        String queryRights = "SELECT * FROM " + dbName + "." + acm
+                + " WHERE " + subject + " = '" + Name
+                + "' OR " + entity + " = '" + Name + "'";
 
         try
         {
-            stmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+            stmtEntity = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+            stmtRights = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
 
-            ResultSet rs = stmt.executeQuery(query);
+            ResultSet rs = stmtEntity.executeQuery(query);
+            ResultSet rsRights = stmtRights.executeQuery(queryRights);
 
             //Precondition: Subject exist in database
             //This also doesn't allow subject0 to be removed form the DB.
             if (!rs.next() || Name.equals(subject0))
             {
-                System.out.println("No");
+                System.out.println("NO");
             }
             else
             {
+                if (rsRights.next())
+                {
+                    if (rsRights.getConcurrency() == ResultSet.CONCUR_UPDATABLE)
+                    {
+                        do
+                        {
+                            rsRights.deleteRow();
+                        }
+                        while (rsRights.next());
+                    }
+                }
+
                 if (rs.getConcurrency() == ResultSet.CONCUR_UPDATABLE)
                 {
                     rs.deleteRow();
@@ -180,6 +201,9 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
                     System.out.println("OK");
                 }
             }
+
+            stmtEntity.close();
+            stmtRights.close();
         }
         catch (SQLException e)
         {
@@ -195,15 +219,22 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
      */
     public void removeObject(String Name)
     {
-        Statement stmt = null;
+        Statement stmtEntity = null;
+        Statement stmtRights = null;
 
-        String query = "SELECT * FROM " + dbName + "." + entityTable + " WHERE " + entityName + " = '" + Name + "'" + " AND " + subjectOrObject + " <> 1";
+        String query = "SELECT * FROM " + dbName + "." + entityTable
+                + " WHERE " + entityName + " = '" + Name
+                + "' AND " + subjectOrObject + " = 0";
 
+        String queryRights = "SELECT * FROM " + dbName + "." + acm
+                + " WHERE " + entity + " = '" + Name + "'";
         try
         {
-            stmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+            stmtEntity = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+            stmtRights = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
 
-            ResultSet rs = stmt.executeQuery(query);
+            ResultSet rs = stmtEntity.executeQuery(query);
+            ResultSet rsRights = stmtRights.executeQuery(queryRights);
 
             //Precondition: Object exist in database
             //Even though subject0 should be considered a subject_or_object which
@@ -214,6 +245,18 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
             }
             else
             {
+                if (rsRights.next())
+                {
+                    if (rsRights.getConcurrency() == ResultSet.CONCUR_UPDATABLE)
+                    {
+                        do
+                        {
+                            rsRights.deleteRow();
+                        }
+                        while (rsRights.next());
+                    }
+                }
+                
                 if (rs.getConcurrency() == ResultSet.CONCUR_UPDATABLE)
                 {
                     rs.deleteRow();
@@ -258,7 +301,7 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
                 stmt.execute(query);
             ///INSERT INTO acm (subject,entity,right,granter) VALUES (grantee,entityGrantedOn,right,granter)
             }
-            returnString = "YES";
+            returnString = "OK";
         }
         catch (SQLException e)
         {
@@ -357,13 +400,6 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
                         {
                             if (R.equals(own) && X.equals(subject0))
                             {
-                                // Revoke ownership from revokee on the given entity
-                                do
-                                {
-                                    rs.deleteRow();
-                                }
-                                while (rs.next());
-
                                 if (cascade)
                                 {
                                     // Revoke any rights granted by Y on the given entity
@@ -371,16 +407,36 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
                                             + " WHERE " + entity + " = '" + E_Name
                                             + "' AND " + granter + " = '" + Y + "'";
 
-                                    rs = stmt.executeQuery(query);
+                                    Statement stmtGranted = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+                                    ResultSet rsGranted = stmtGranted.executeQuery(query);
 
-                                    if (rs.next())
+                                    if (rsGranted.getConcurrency() == ResultSet.CONCUR_UPDATABLE)
                                     {
-                                        do
+                                        if (rsGranted.next())
                                         {
-                                            this.revoke(Y, rs.getString(subject), rs.getString(right), E_Name, cascades);
+                                            do
+                                            {
+                                                this.revoke(Y, rsGranted.getString(subject), rsGranted.getString(right), E_Name, cascades);
+                                            }
+                                            while (rsGranted.next());
                                         }
-                                        while (rs.next());
                                     }
+
+                                    rsGranted.close();
+                                    stmtGranted.close();
+                                }
+
+//                                query = "SELECT * FROM " + dbName + "." + acm
+//                                        + " WHERE " + subject + " = '" + Y
+//                                        + "' AND " + entity + " = '" + E_Name
+//                                        + "' AND " + right + " = '" + own + "'";
+//
+//                                rs = stmt.executeQuery(query);
+
+                                // Revoke ownership from revokee on the given entity
+                                while (rs.next())
+                                {
+                                    rs.deleteRow();
                                 }
 
                                 rtnStr = "OK";
@@ -411,7 +467,7 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
                                     {
                                         do
                                         {
-                                            this.cascadeRevoke(Y, rs.getString(subject), rs.getString(right), E_Name);
+                                           rs.deleteRow();
                                         }
                                         while (rs.next());
                                     }
@@ -419,42 +475,9 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
 
                                 rtnStr = "OK";
                             }
-                            else if (R.equals(takeCopy))
+                            else if (R.equals(takeCopy) || R.equals(takeReadUpdate) || R.equals(read) || R.equals(update))
                             {
-                                // Revoke any 'd' from revokee on the given entity
-                                do
-                                {
-                                    rs.deleteRow();
-                                }
-                                while (rs.next());
-
-                                rtnStr = "OK";
-                            }
-                            else if (R.equals(takeReadUpdate))
-                            {
-                                // Revoke any 't' from revokee on the given entity
-                                do
-                                {
-                                    rs.deleteRow();
-                                }
-                                while (rs.next());
-
-                                rtnStr = "OK";
-                            }
-                            else if (R.equals(read))
-                            {
-                                // Revoke any 'r' from revokee on the given entity
-                                do
-                                {
-                                    rs.deleteRow();
-                                }
-                                while (rs.next());
-
-                                rtnStr = "OK";
-                            }
-                            else if (R.equals(update))
-                            {
-                                // Revoke any 'u' from revokee on the given entity
+                                // Revoke any 'd', 't', 'r', 'u' from revokee on the given entity
                                 do
                                 {
                                     rs.deleteRow();
@@ -483,7 +506,7 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
                 }
                 catch (SQLException e)
                 {
-                    System.out.println(e);
+                    System.out.println("In Revoke: " + e);
                     rtnStr = "NO";
                 }
             }
@@ -491,152 +514,6 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
             {
                 rtnStr = "NO";
             }
-        }
-
-        return rtnStr;
-    }
-
-    /**
-     * Revoker revokes right R on the entity E_Name from revokee.
-     *
-     * @param revoker   Revoker of the right
-     * @param revokee   Subject whose right is being revoked
-     * @param R         {"r", "u", "c", "o", "d", "t"}
-     * @param E_Name    The entity on which the revokee's right is being revoked
-     * @return          "OK" on success, "NO" otherwise
-     */
-    private String cascadeRevoke(String revoker, String revokee, String R, String E_Name)
-    {
-        String rtnStr = "NO";
-        String query = "SELECT * FROM " + dbName + "." + acm
-                + " WHERE " + subject + " = '" + revokee
-                + "' AND " + entity + " = '" + E_Name
-                + "' AND " + right + " = '" + R
-                + "' AND " + granter + " = '" + revoker + "'";
-
-        try
-        {
-            Statement stmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
-            ResultSet rs = stmt.executeQuery(query);
-
-            if (rs.getConcurrency() == ResultSet.CONCUR_UPDATABLE)
-            {
-                if (rs.next())
-                {
-                    if (R.equals(copy))
-                    {
-                        String copyTimeStamp = rs.getString(timestamp);
-                        String nextCopyTimeStamp = null;
-
-                        Date copyGranted = Date.valueOf(copyTimeStamp);
-                        Date nextCopyGranted = null;
-
-                        // Revoke 'c' from revokee on the given entity
-                        do
-                        {
-                            rs.deleteRow();
-                        }
-                        while (rs.next());
-
-                        query = "SELECT * FROM " + dbName + "." + acm
-                                + " WHERE " + subject + " = '" + revokee
-                                + "' AND " + entity + " = '" + E_Name
-                                + "' AND " + right + " = '" + copy
-                                + "' AND " + granter + " <> '" + revoker
-                                + "' AND " + timestamp + " > " + copyTimeStamp;
-
-                        rs = stmt.executeQuery(query);
-
-                        if (rs.next())
-                        {
-                            nextCopyTimeStamp = rs.getString(timestamp);
-                            nextCopyGranted = Date.valueOf(nextCopyTimeStamp);
-
-                            while (rs.next())
-                            {
-                                if (Date.valueOf(rs.getString(timestamp)).before(nextCopyGranted))
-                                {
-                                    nextCopyTimeStamp = rs.getString(timestamp);
-                                    nextCopyGranted = Date.valueOf(nextCopyTimeStamp);
-                                }
-                            }
-                        }
-
-                        query = "SELECT * FROM " + dbName + "." + acm
-                                + " WHERE " + entity + " = '" + E_Name
-                                + "' AND " + granter + " <> '" + revokee
-                                + "' AND " + timestamp + " > " + copyTimeStamp
-                                + "' AND " + timestamp + " < " + nextCopyTimeStamp;
-
-                        while (rs.next())
-                        {
-                            this.cascadeRevoke(revokee, rs.getString(subject), rs.getString(right), E_Name);
-                        }
-
-                        rtnStr = "OK";
-                    }
-                    else if (R.equals(takeCopy))
-                    {
-                        // Revoke 'd' from revokee on the given entity
-                        do
-                        {
-                            rs.deleteRow();
-                        }
-                        while (rs.next());
-
-                        rtnStr = "OK";
-                    }
-                    else if (R.equals(takeReadUpdate))
-                    {
-                        // Revoke 't' from revokee on the given entity
-                        do
-                        {
-                            rs.deleteRow();
-                        }
-                        while (rs.next());
-
-                        rtnStr = "OK";
-                    }
-                    else if (R.equals(read))
-                    {
-                        // Revoke 'r' from revokee on the given entity
-                        do
-                        {
-                            rs.deleteRow();
-                        }
-                        while (rs.next());
-
-                        rtnStr = "OK";
-                    }
-                    else if (R.equals(update))
-                    {
-                        // Revoke 'u' from revokee on the given entity
-                        do
-                        {
-                            rs.deleteRow();
-                        }
-                        while (rs.next());
-
-                        rtnStr = "OK";
-                    }
-                    else
-                    {
-                        rtnStr = "NO";
-                    }
-                }
-                else
-                {
-                    rtnStr = "NO";
-                }
-            }
-
-            rs.close();
-            stmt.close();
-        }
-        catch (SQLException e)
-        {
-            System.out.println(e);
-            rtnStr = "NO";
         }
 
         return rtnStr;
@@ -655,11 +532,15 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
         String rtnStr = "NO";
 
         Statement stmt = null;
-        String query = "SELECT " + subject + ", " + entity + ", " + right + " FROM " + dbName + "." + acm + " WHERE " + subject + " = '" + X + "' AND " + entity + " = '" + E_Name + "' AND " + right + " = '" + R + "'";
+        String query = "SELECT " + subject + ", " + entity + ", " + right
+                + " FROM " + dbName + "." + acm
+                + " WHERE " + subject + " = '" + X
+                + "' AND " + entity + " = '" + E_Name
+                + "' AND " + right + " = '" + R + "'";
 
         try
         {
-            stmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+            stmt = con.createStatement();
 
             ResultSet rs = stmt.executeQuery(query);
 
