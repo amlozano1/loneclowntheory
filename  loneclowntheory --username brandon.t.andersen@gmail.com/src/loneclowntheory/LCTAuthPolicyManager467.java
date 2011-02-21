@@ -300,8 +300,8 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
                         " VALUES ('" + grantee + "', '" + entityGrantedOn + "', '" + rightToBeGranted +"', '"+granterGranting + "');";
                 stmt.execute(query);
             ///INSERT INTO acm (subject,entity,right,granter) VALUES (grantee,entityGrantedOn,right,granter)
+                returnString = "OK";
             }
-            returnString = "OK";
         }
         catch (SQLException e)
         {

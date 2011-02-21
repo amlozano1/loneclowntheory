@@ -37,22 +37,25 @@ public class Main
             lct.newSubject("s2");
             lct.newSubject("s3");
             lct.newObject("o1");
+            lct.newObject("o2");
+            lct.newObject("o3");
 
-            System.out.println("1 " + lct.checkRights("s1", "subject0", "o"));
-            System.out.println("2 " + lct.checkRights("o1", "subject0", "o"));
-            System.out.println("3 " + lct.checkRights("o1", "subject0", "r"));
-            System.out.println("4 " + lct.grant("subject0","s1","o","o1"));
+
+//            System.out.println("1 " + lct.checkRights("s1", "subject0", "o"));
+//            System.out.println("2 " + lct.checkRights("o1", "subject0", "o"));
+//            System.out.println("3 " + lct.checkRights("o1", "subject0", "r"));
+//            System.out.println("4 " + lct.grant("subject0","s1","o","o1"));
             System.out.println("5 " + lct.grant("s1","s2","t","o1"));
-            System.out.println("5.1 " + lct.grant("s1","s2","c","o1"));
+//            System.out.println("5.1 " + lct.grant("s1","s2","c","o1"));
             System.out.println("6 " + lct.take("s2", "r", "o1"));
-            System.out.println("6.1 " + lct.grant("s2", "s3", "r", "o1"));
-            System.out.println("7 " + lct.checkRights("o1", "s1", "o"));
-            System.out.println("8 " + lct.revoke("subject0", "s1", "o", "o1", "C"));
-            System.out.println("9 " + lct.revoke("s1", "s3", "r", "o1", "C"));
-            System.out.print("10 ");
-            lct.removeSubject("s1");
-            System.out.print("11 ");
-            lct.removeObject("o1");
+//            System.out.println("6.1 " + lct.grant("s2", "s3", "r", "o1"));
+//            System.out.println("7 " + lct.checkRights("o1", "s1", "o"));
+//            System.out.println("8 " + lct.revoke("subject0", "s1", "o", "o1", "C"));
+//            System.out.println("9 " + lct.revoke("s1", "s3", "r", "o1", "C"));
+//            System.out.print("10 ");
+//            lct.removeSubject("s1");
+//            System.out.print("11 ");
+//            lct.removeObject("o1");
 
             con.close();
 
