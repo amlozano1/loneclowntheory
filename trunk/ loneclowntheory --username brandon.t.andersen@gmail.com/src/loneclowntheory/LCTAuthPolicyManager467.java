@@ -349,130 +349,124 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
                 try
                 {
                     Statement stmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
-                    ;
                     ResultSet rs = stmt.executeQuery(query);
 
-                    if (rs.next())
+                    if (rs.getConcurrency() == ResultSet.CONCUR_UPDATABLE)
                     {
-                        if (R.equals(own) && X.equals(subject0))
+                        if (rs.next())
                         {
-                            // Revoke ownership from revokee on the given entity
-                            do
+                            if (R.equals(own) && X.equals(subject0))
                             {
-                                rs.deleteRow();
-                            }
-                            while (rs.next());
-
-                            if (cascade)
-                            {
-                                // Revoke any rights granted by Y on the given entity
-                                query = "SELECT * FROM " + dbName + "." + acm
-                                        + " WHERE " + entity + " = '" + E_Name
-                                        + "' AND " + granter + " = '" + Y + "'";
-
-                                rs = stmt.executeQuery(query);
-
-                                if (rs.next())
+                                // Revoke ownership from revokee on the given entity
+                                do
                                 {
-                                    do
-                                    {
-                                        this.revoke(Y, rs.getString(subject), rs.getString(right), E_Name, cascades);
-                                    }
-                                    while (rs.next());
+                                    rs.deleteRow();
                                 }
-                            }
+                                while (rs.next());
 
-                            rtnStr = "OK";
-                        }
-                        else if (R.equals(copy))
-                        {
-                            // Revoke any 'c' from revokee on the entity
-                            do
-                            {
-                                rs.deleteRow();
-                            }
-                            while (rs.next());
-
-                            if (cascade)
-                            {
-                                // Revoke any 'd', 't', 'r', 'u' granted by Y on the given entity
-                                query = "SELECT * FROM " + dbName + "." + acm
-                                        + " WHERE " + entity + " = '" + E_Name
-                                        + "' AND " + granter + " = '" + Y
-                                        + "' AND (" + right + " = '" + takeCopy
-                                        + "' OR " + right + " = '" + takeReadUpdate
-                                        + "' OR " + right + " = '" + read
-                                        + "' OR " + right + " = '" + update + "')";
-
-                                rs = stmt.executeQuery(query);
-
-                                if (rs.next())
+                                if (cascade)
                                 {
-                                    do
+                                    // Revoke any rights granted by Y on the given entity
+                                    query = "SELECT * FROM " + dbName + "." + acm
+                                            + " WHERE " + entity + " = '" + E_Name
+                                            + "' AND " + granter + " = '" + Y + "'";
+
+                                    rs = stmt.executeQuery(query);
+
+                                    if (rs.next())
                                     {
-                                        this.cascadeRevoke(Y, rs.getString(subject), rs.getString(right), E_Name);
+                                        do
+                                        {
+                                            this.revoke(Y, rs.getString(subject), rs.getString(right), E_Name, cascades);
+                                        }
+                                        while (rs.next());
                                     }
-                                    while (rs.next());
                                 }
-                            }
 
-                            rtnStr = "OK";
-                        }
-                        else if (R.equals(takeCopy))
-                        {
-                            // Revoke any 'd' from revokee on the given entity
-                            do
+                                rtnStr = "OK";
+                            }
+                            else if (R.equals(copy))
                             {
-                                rs.deleteRow();
+                                // Revoke any 'c' from revokee on the entity
+                                do
+                                {
+                                    rs.deleteRow();
+                                }
+                                while (rs.next());
+
+                                if (cascade)
+                                {
+                                    // Revoke any 'd', 't', 'r', 'u' granted by Y on the given entity
+                                    query = "SELECT * FROM " + dbName + "." + acm
+                                            + " WHERE " + entity + " = '" + E_Name
+                                            + "' AND " + granter + " = '" + Y
+                                            + "' AND (" + right + " = '" + takeCopy
+                                            + "' OR " + right + " = '" + takeReadUpdate
+                                            + "' OR " + right + " = '" + read
+                                            + "' OR " + right + " = '" + update + "')";
+
+                                    rs = stmt.executeQuery(query);
+
+                                    if (rs.next())
+                                    {
+                                        do
+                                        {
+                                            this.cascadeRevoke(Y, rs.getString(subject), rs.getString(right), E_Name);
+                                        }
+                                        while (rs.next());
+                                    }
+                                }
+
+                                rtnStr = "OK";
                             }
-                            while (rs.next());
-
-                            // Revoke any 'c' from revokee on the given entity
-//                            if (cascade)
-//                            {
-//                                this.revoke(X, Y, copy, E_Name, cascades);
-//                            }
-
-                            rtnStr = "OK";
-                        }
-                        else if (R.equals(takeReadUpdate))
-                        {
-                            // Revoke any 't' from revokee on the given entity
-                            do
+                            else if (R.equals(takeCopy))
                             {
-                                rs.deleteRow();
+                                // Revoke any 'd' from revokee on the given entity
+                                do
+                                {
+                                    rs.deleteRow();
+                                }
+                                while (rs.next());
+
+                                rtnStr = "OK";
                             }
-                            while (rs.next());
-
-//                            if (cascade)
-//                            {
-//                                this.revoke(X, Y, read, E_Name, cascades);
-//                                this.revoke(X, Y, update, E_Name, cascades);
-//                            }
-
-                            rtnStr = "OK";
-                        }
-                        else if (R.equals(read))
-                        {
-                            // Revoke any 'r' from revokee on the given entity
-                            do
+                            else if (R.equals(takeReadUpdate))
                             {
-                                rs.deleteRow();
-                            }
-                            while (rs.next());
+                                // Revoke any 't' from revokee on the given entity
+                                do
+                                {
+                                    rs.deleteRow();
+                                }
+                                while (rs.next());
 
-                            rtnStr = "OK";
-                        }
-                        else if (R.equals(update))
-                        {
-                            // Revoke any 'u' from revokee on the given entity
-                            do
+                                rtnStr = "OK";
+                            }
+                            else if (R.equals(read))
                             {
-                                rs.deleteRow();
-                            }
-                            while (rs.next());
+                                // Revoke any 'r' from revokee on the given entity
+                                do
+                                {
+                                    rs.deleteRow();
+                                }
+                                while (rs.next());
 
-                            rtnStr = "OK";
+                                rtnStr = "OK";
+                            }
+                            else if (R.equals(update))
+                            {
+                                // Revoke any 'u' from revokee on the given entity
+                                do
+                                {
+                                    rs.deleteRow();
+                                }
+                                while (rs.next());
+
+                                rtnStr = "OK";
+                            }
+                            else
+                            {
+                                rtnStr = "NO";
+                            }
                         }
                         else
                         {
@@ -523,122 +517,117 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
         try
         {
             Statement stmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
-            ;
             ResultSet rs = stmt.executeQuery(query);
 
-            if (rs.next())
+            if (rs.getConcurrency() == ResultSet.CONCUR_UPDATABLE)
             {
-                if (R.equals(copy))
+                if (rs.next())
                 {
-                    String copyTimeStamp = rs.getString(timestamp);
-                    String nextCopyTimeStamp = null;
-
-                    Date copyGranted = Date.valueOf(copyTimeStamp);
-                    Date nextCopyGranted = null;
-
-                    // Revoke 'c' from revokee on the given entity
-                    do
+                    if (R.equals(copy))
                     {
-                        rs.deleteRow();
-                    }
-                    while (rs.next());
+                        String copyTimeStamp = rs.getString(timestamp);
+                        String nextCopyTimeStamp = null;
 
-                    query = "SELECT * FROM " + dbName + "." + acm
-                            + " WHERE " + subject + " = '" + revokee
-                            + "' AND " + entity + " = '" + E_Name
-                            + "' AND " + right + " = '" + copy
-                            + "' AND " + granter + " <> '" + revoker
-                            + "' AND " + timestamp + " > " + copyTimeStamp;
+                        Date copyGranted = Date.valueOf(copyTimeStamp);
+                        Date nextCopyGranted = null;
 
-                    rs = stmt.executeQuery(query);
+                        // Revoke 'c' from revokee on the given entity
+                        do
+                        {
+                            rs.deleteRow();
+                        }
+                        while (rs.next());
 
-                    if (rs.next())
-                    {
-                        nextCopyTimeStamp = rs.getString(timestamp);
-                        nextCopyGranted = Date.valueOf(nextCopyTimeStamp);
+                        query = "SELECT * FROM " + dbName + "." + acm
+                                + " WHERE " + subject + " = '" + revokee
+                                + "' AND " + entity + " = '" + E_Name
+                                + "' AND " + right + " = '" + copy
+                                + "' AND " + granter + " <> '" + revoker
+                                + "' AND " + timestamp + " > " + copyTimeStamp;
+
+                        rs = stmt.executeQuery(query);
+
+                        if (rs.next())
+                        {
+                            nextCopyTimeStamp = rs.getString(timestamp);
+                            nextCopyGranted = Date.valueOf(nextCopyTimeStamp);
+
+                            while (rs.next())
+                            {
+                                if (Date.valueOf(rs.getString(timestamp)).before(nextCopyGranted))
+                                {
+                                    nextCopyTimeStamp = rs.getString(timestamp);
+                                    nextCopyGranted = Date.valueOf(nextCopyTimeStamp);
+                                }
+                            }
+                        }
+
+                        query = "SELECT * FROM " + dbName + "." + acm
+                                + " WHERE " + entity + " = '" + E_Name
+                                + "' AND " + granter + " <> '" + revokee
+                                + "' AND " + timestamp + " > " + copyTimeStamp
+                                + "' AND " + timestamp + " < " + nextCopyTimeStamp;
 
                         while (rs.next())
                         {
-                            if (Date.valueOf(rs.getString(timestamp)).before(nextCopyGranted))
-                            {
-                                nextCopyTimeStamp = rs.getString(timestamp);
-                                nextCopyGranted = Date.valueOf(nextCopyTimeStamp);
-                            }
+                            this.cascadeRevoke(revokee, rs.getString(subject), rs.getString(right), E_Name);
                         }
+
+                        rtnStr = "OK";
                     }
-
-                    query = "SELECT * FROM " + dbName + "." + acm
-                            + " WHERE " + entity + " = '" + E_Name
-                            + "' AND " + granter + " <> '" + revokee
-                            + "' AND " + timestamp + " > " + copyTimeStamp
-                            + "' AND " + timestamp + " < " + nextCopyTimeStamp;
-
-                    while (rs.next())
+                    else if (R.equals(takeCopy))
                     {
-                        this.cascadeRevoke(revokee, rs.getString(subject), rs.getString(right), E_Name);
-                    }
+                        // Revoke 'd' from revokee on the given entity
+                        do
+                        {
+                            rs.deleteRow();
+                        }
+                        while (rs.next());
 
-                    rtnStr = "OK";
-                }
-                else if (R.equals(takeCopy))
-                {
-                    // Revoke 'd' from revokee on the given entity
-                    do
+                        rtnStr = "OK";
+                    }
+                    else if (R.equals(takeReadUpdate))
                     {
-                        rs.deleteRow();
+                        // Revoke 't' from revokee on the given entity
+                        do
+                        {
+                            rs.deleteRow();
+                        }
+                        while (rs.next());
+
+                        rtnStr = "OK";
                     }
-                    while (rs.next());
-
-//                    // Revoke 'c' from revokee where granter is revoker
-//                    this.cascadeRevoke(revoker, revokee, copy, E_Name);
-
-                    rtnStr = "OK";
-                }
-                else if (R.equals(takeReadUpdate))
-                {
-                    // Revoke 't' from revokee on the given entity
-                    do
+                    else if (R.equals(read))
                     {
-                        rs.deleteRow();
+                        // Revoke 'r' from revokee on the given entity
+                        do
+                        {
+                            rs.deleteRow();
+                        }
+                        while (rs.next());
+
+                        rtnStr = "OK";
                     }
-                    while (rs.next());
-
-//                    // Revoke 'r' and 'u' from revokee where granter is revoker
-//                    this.cascadeRevoke(revoker, revokee, read, E_Name);
-//                    this.cascadeRevoke(revoker, revokee, update, E_Name);
-
-                    rtnStr = "OK";
-                }
-                else if (R.equals(read))
-                {
-                    // Revoke 'r' from revokee on the given entity
-                    do
+                    else if (R.equals(update))
                     {
-                        rs.deleteRow();
-                    }
-                    while (rs.next());
+                        // Revoke 'u' from revokee on the given entity
+                        do
+                        {
+                            rs.deleteRow();
+                        }
+                        while (rs.next());
 
-                    rtnStr = "OK";
-                }
-                else if (R.equals(update))
-                {
-                    // Revoke 'u' from revokee on the given entity
-                    do
+                        rtnStr = "OK";
+                    }
+                    else
                     {
-                        rs.deleteRow();
+                        rtnStr = "NO";
                     }
-                    while (rs.next());
-
-                    rtnStr = "OK";
                 }
                 else
                 {
                     rtnStr = "NO";
                 }
-            }
-            else
-            {
-                rtnStr = "NO";
             }
 
             rs.close();
