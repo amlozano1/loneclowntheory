@@ -31,10 +31,9 @@ CREATE  TABLE IF NOT EXISTS `LoneClownTheory`.`acm` (
   `granter` VARCHAR(10) NOT NULL ,
   `right` VARCHAR(1) NOT NULL ,
   `timestamp` TIMESTAMP NOT NULL ,
-  PRIMARY KEY (`subject`, `entity`, `granter`, `right`) ,
+  PRIMARY KEY (`subject`, `entity`, `right`, `granter`) ,
   INDEX `entity` (`entity` ASC) ,
   INDEX `subject` (`subject` ASC) ,
-  INDEX `granter` (`granter` ASC) ,
   CONSTRAINT `subject`
     FOREIGN KEY (`subject` )
     REFERENCES `LoneClownTheory`.`entityTable` (`entityName` )
@@ -42,11 +41,6 @@ CREATE  TABLE IF NOT EXISTS `LoneClownTheory`.`acm` (
     ON UPDATE NO ACTION,
   CONSTRAINT `entity`
     FOREIGN KEY (`entity` )
-    REFERENCES `LoneClownTheory`.`entityTable` (`entityName` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `granter`
-    FOREIGN KEY (`granter` )
     REFERENCES `LoneClownTheory`.`entityTable` (`entityName` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
