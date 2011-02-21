@@ -426,13 +426,6 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
                                     stmtGranted.close();
                                 }
 
-//                                query = "SELECT * FROM " + dbName + "." + acm
-//                                        + " WHERE " + subject + " = '" + Y
-//                                        + "' AND " + entity + " = '" + E_Name
-//                                        + "' AND " + right + " = '" + own + "'";
-//
-//                                rs = stmt.executeQuery(query);
-
                                 // Revoke ownership from revokee on the given entity
                                 while (rs.next())
                                 {
