@@ -155,24 +155,17 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
      */
     public void removeSubject(String Name)
     {
-        Statement stmtEntity = null;
-        Statement stmtRights = null;
+        Statement stmt = null;
 
         String query = "SELECT * FROM " + dbName + "." + entityTable
                 + " WHERE " + entityName + " = '" + Name
                 + "' AND " + subjectOrObject + " = 1";
 
-        String queryRights = "SELECT * FROM " + dbName + "." + acm
-                + " WHERE " + subject + " = '" + Name
-                + "' OR " + entity + " = '" + Name + "'";
-
         try
         {
-            stmtEntity = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
-            stmtRights = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+            stmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
 
-            ResultSet rs = stmtEntity.executeQuery(query);
-            ResultSet rsRights = stmtRights.executeQuery(queryRights);
+            ResultSet rs = stmt.executeQuery(query);
 
             //Precondition: Subject exist in database
             //This also doesn't allow subject0 to be removed form the DB.
@@ -182,18 +175,6 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
             }
             else
             {
-                if (rsRights.next())
-                {
-                    if (rsRights.getConcurrency() == ResultSet.CONCUR_UPDATABLE)
-                    {
-                        do
-                        {
-                            rsRights.deleteRow();
-                        }
-                        while (rsRights.next());
-                    }
-                }
-
                 if (rs.getConcurrency() == ResultSet.CONCUR_UPDATABLE)
                 {
                     rs.deleteRow();
@@ -202,8 +183,7 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
                 }
             }
 
-            stmtEntity.close();
-            stmtRights.close();
+            stmt.close();
         }
         catch (SQLException e)
         {
@@ -219,22 +199,17 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
      */
     public void removeObject(String Name)
     {
-        Statement stmtEntity = null;
-        Statement stmtRights = null;
+        Statement stmt = null;
 
         String query = "SELECT * FROM " + dbName + "." + entityTable
                 + " WHERE " + entityName + " = '" + Name
                 + "' AND " + subjectOrObject + " = 0";
 
-        String queryRights = "SELECT * FROM " + dbName + "." + acm
-                + " WHERE " + entity + " = '" + Name + "'";
         try
         {
-            stmtEntity = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
-            stmtRights = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+            stmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
 
-            ResultSet rs = stmtEntity.executeQuery(query);
-            ResultSet rsRights = stmtRights.executeQuery(queryRights);
+            ResultSet rs = stmt.executeQuery(query);
 
             //Precondition: Object exist in database
             //Even though subject0 should be considered a subject_or_object which
@@ -244,19 +219,7 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
                 System.out.println("No");
             }
             else
-            {
-                if (rsRights.next())
-                {
-                    if (rsRights.getConcurrency() == ResultSet.CONCUR_UPDATABLE)
-                    {
-                        do
-                        {
-                            rsRights.deleteRow();
-                        }
-                        while (rsRights.next());
-                    }
-                }
-                
+            {                
                 if (rs.getConcurrency() == ResultSet.CONCUR_UPDATABLE)
                 {
                     rs.deleteRow();
@@ -264,6 +227,8 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
                     System.out.println("OK");
                 }
             }
+
+            stmt.close();
         }
         catch (SQLException e)
         {
