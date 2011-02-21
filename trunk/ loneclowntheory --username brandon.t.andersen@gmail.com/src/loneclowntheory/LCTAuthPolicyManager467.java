@@ -337,56 +337,80 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
      */
     public String revoke(String X, String Y, String R, String E_Name, String cascades)
     {
+        // The return string, initially assumed to be "NO"
         String rtnStr = "NO";
 
+        // Get the status of cascades as a boolean for reuse
         boolean cascade = cascades.equals("C");
 
+        // First, check to see that we are not trying to revoke from subject0
+        // since this is not allowed
         if (Y.equals(subject0))
         {
             rtnStr = "NO";
         }
+        // Trying to revoke from a subject other than subject0, so keep going
         else
         {
+            // Check to see if the revoker (X) is the owner of the entity (E_Name)
             if (this.checkRights(E_Name, X, own).equals("OK"))
             {
+                // Create the query string to check for if the subject (Y) has
+                // the right (R) on the entity (E_Name) in question
                 String query = "SELECT * FROM " + dbName + "." + acm
                         + " WHERE " + subject + " = '" + Y
                         + "' AND " + entity + " = '" + E_Name
                         + "' AND " + right + " = '" + R + "'";
 
+                // try-catch block for SQLExceptions
                 try
                 {
+                    // Create a Statement object that will produce updateable result sets
                     Statement stmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+
+                    // Get the result set for the query
                     ResultSet rs = stmt.executeQuery(query);
 
+                    // Test the result set to see if it is updateble
                     if (rs.getConcurrency() == ResultSet.CONCUR_UPDATABLE)
                     {
+                        // Check to see if it has at least one row
                         if (rs.next())
                         {
+                            // If trying to revoke 'o', make sure the revoker (X) is subject0
                             if (R.equals(own) && X.equals(subject0))
                             {
+                                // Check for cascading
                                 if (cascade)
                                 {
-                                    // Revoke any rights granted by Y on the given entity
+                                    // Query to revoke any rights granted by Y on the given entity
                                     query = "SELECT * FROM " + dbName + "." + acm
                                             + " WHERE " + entity + " = '" + E_Name
                                             + "' AND " + granter + " = '" + Y + "'";
 
+                                    // Create a new Statement to get a different result set
                                     Statement stmtGranted = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+
+                                    // Get the result set for the granted rights
                                     ResultSet rsGranted = stmtGranted.executeQuery(query);
 
+                                    // Test the result set to see if it is updateble
                                     if (rsGranted.getConcurrency() == ResultSet.CONCUR_UPDATABLE)
                                     {
+                                        // Check to see if it has at least one row
                                         if (rsGranted.next())
                                         {
+                                            // Call revoke recursivly with the revokee as the revoker since we are revoking ownership with cascade
                                             do
                                             {
+                                                // This will be called for each right the the revokee (Y) has granted on the entity (E_Name)
                                                 this.revoke(Y, rsGranted.getString(subject), rsGranted.getString(right), E_Name, cascades);
                                             }
                                             while (rsGranted.next());
                                         }
                                     }
 
+                                    // Close the result set and statement for rights granted
                                     rsGranted.close();
                                     stmtGranted.close();
                                 }
@@ -398,8 +422,10 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
                                 }
                                 while (rs.next());
 
+                                // return string is "OK" since we at least revoked ownership
                                 rtnStr = "OK";
                             }
+                            // Revocation of 'c'
                             else if (R.equals(copy))
                             {
                                 // Revoke any 'c' from revokee on the entity
@@ -409,9 +435,10 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
                                 }
                                 while (rs.next());
 
+                                // Check to see if this is a cascading revoke
                                 if (cascade)
                                 {
-                                    // Revoke any 'd', 't', 'r', 'u' granted by Y on the given entity
+                                    // If so, then revoke any 'd', 't', 'r', 'u' granted by the revokee (Y) on the given entity (E_Name)
                                     query = "SELECT * FROM " + dbName + "." + acm
                                             + " WHERE " + entity + " = '" + E_Name
                                             + "' AND " + granter + " = '" + Y
@@ -420,10 +447,13 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
                                             + "' OR " + right + " = '" + read
                                             + "' OR " + right + " = '" + update + "')";
 
+                                    // Get the result set for the query
                                     rs = stmt.executeQuery(query);
 
+                                    // Check to see if it has at least one entry
                                     if (rs.next())
                                     {
+                                        // If so, delete
                                         do
                                         {
                                            rs.deleteRow();
@@ -432,8 +462,10 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
                                     }
                                 }
 
+                                // Return string is "OK" since we at least revoked 'c'
                                 rtnStr = "OK";
                             }
+                            // Revocation for all other rights, none of which cascade
                             else if (R.equals(takeCopy) || R.equals(takeReadUpdate) || R.equals(read) || R.equals(update))
                             {
                                 // Revoke any 'd', 't', 'r', 'u' from revokee on the given entity
@@ -443,38 +475,48 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
                                 }
                                 while (rs.next());
 
+                                // Resturn string is "OK" since we at least revoked one right
                                 rtnStr = "OK";
                             }
+                            // If some other right (R) was passed that was not 'o', 'c', 'd', 't', 'r', 'u'
                             else
                             {
                                 rtnStr = "NO";
                             }
                         }
+                        // If the right trying to be revoked is not present for the subject on the entity
                         else
                         {
                             rtnStr = "NO";
                         }
                     }
+                    // If the result set for the rights was not updateable
                     else
                     {
                         rtnStr = "NO";
                     }
 
+                    // Close the result set and statment
                     rs.close();
                     stmt.close();
                 }
+                // Catch block for SQLExceptions
                 catch (SQLException e)
                 {
-                    System.out.println("In Revoke: " + e);
+                    //Debug print
+                    //System.out.println("In Revoke: " + e);
+                    // Failure, so return string set to "NO"
                     rtnStr = "NO";
                 }
             }
+            // Someone other than an owner of E_Name is trying to revoke, not allowed
             else
             {
                 rtnStr = "NO";
             }
         }
 
+        // Return the final return string, either "OK" if at least one right was revoked, otherwise "NO"
         return rtnStr;
     }
 
@@ -488,35 +530,49 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
      */
     public String checkRights(String E_Name, String X, String R)
     {
+        // Return string initialized to "NO"
         String rtnStr = "NO";
 
+        // Statement for queries
         Statement stmt = null;
+
+        // Query string to check if the subject (X) has right (R) on entity (E_Name)
         String query = "SELECT " + subject + ", " + entity + ", " + right
                 + " FROM " + dbName + "." + acm
                 + " WHERE " + subject + " = '" + X
                 + "' AND " + entity + " = '" + E_Name
                 + "' AND " + right + " = '" + R + "'";
 
+        // try-catch block for SQLExceptions
         try
         {
+            // Create the statment object
             stmt = con.createStatement();
 
+            // Get the result set for the query
             ResultSet rs = stmt.executeQuery(query);
 
+            // check to see if it has at least one row, indicating that the subject does have the right on the entity
             if (rs.next())
             {
+                // If so, the return string is set to "OK"
                 rtnStr = "OK";
             }
 
+            // Close the result set and statement
             rs.close();
             stmt.close();
         }
+        // Catch any SQLExceptions
         catch (SQLException e)
         {
-            System.out.println(e);
+            //Debug print
+            //System.out.println("In checkRights: " + e);
+            // Failure, so return string set to "NO"
             rtnStr = "NO";
         }
 
+        // Return the return string, either "OK" on success or "NO" on failure
         return rtnStr;
     }
 }
