@@ -37,12 +37,12 @@ CREATE  TABLE IF NOT EXISTS `LoneClownTheory`.`acm` (
   CONSTRAINT `subject`
     FOREIGN KEY (`subject` )
     REFERENCES `LoneClownTheory`.`entityTable` (`entityName` )
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION,
   CONSTRAINT `entity`
     FOREIGN KEY (`entity` )
     REFERENCES `LoneClownTheory`.`entityTable` (`entityName` )
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
