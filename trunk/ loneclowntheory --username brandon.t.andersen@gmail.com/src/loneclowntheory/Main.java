@@ -148,9 +148,9 @@ public class Main
 //            lct.grant("s1", "subject0", "r", "o1");
 //            printEntityTable(con, dbName);
 
-/******************************************************/
-/        removeSubject and removeObject test cases     /
-/******************************************************/
+/********************************************************/
+/*        removeSubject and removeObject test cases     */
+/********************************************************/
 
             printEntityTable(con, dbName);
             printACM(con, dbName);
@@ -203,9 +203,9 @@ public class Main
             printEntityTable(con, dbName);
             printACM(con, dbName);
 
-/******************************************************/
-/   End of removeSubject and removeObject test cases   /
-/******************************************************/
+/********************************************************/
+/*   End of removeSubject and removeObject test cases   */
+/********************************************************/
 
 
             con.close();
