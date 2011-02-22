@@ -107,10 +107,11 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
       + ") completed successfully");*/
       System.out.println("OK");
 
-      //   }
+
 
       rs.close(); //close the recordset
       stmt.close(); //close the statement
+            //   }
     }
     catch (MySQLIntegrityConstraintViolationException e) //Predconition fails
     {
@@ -170,10 +171,11 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
       System.out.println("newObject(" + objectName
       + ") completed successfully");*/
       System.out.println("OK");
-//      }
+
       rs.close(); //close resultset
       stmt.close(); //close the db conn
-
+      
+//      }
     }
     catch (MySQLIntegrityConstraintViolationException e) //Predconition fails
     {
