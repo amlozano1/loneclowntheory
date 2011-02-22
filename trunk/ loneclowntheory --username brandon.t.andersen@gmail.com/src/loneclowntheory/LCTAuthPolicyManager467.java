@@ -249,6 +249,7 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
     {
         String returnString = "NO"; //start pessimistic
         String rightName;//string to hold the database name for the rights
+        String query;
         if(rightToBeGranted.length()!=1)//should only pass one character in the right String
         {
             return "NO";
@@ -257,11 +258,37 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
         try
         {
             Statement stmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+            //ensure that the grantee is a subject
+            query = "SELECT * FROM " + entityTable + " WHERE " + subjectOrObject + "='0' AND "+ entityName + "='" + grantee + "';";
+
+            if(stmt.executeQuery(query).next())//if the grantee is not a subject
+            {
+                return "NO";
+            }
+            if(rightToBeGranted.equals("o"))
+            {
+                query = "SELECT * FROM " + acm + " WHERE " + entity + "='" + entityGrantedOn + "' AND "+ right + "='o';";
+                ResultSet rs = stmt.executeQuery(query);
+                if(rs.next())//if there is an owner present
+                {
+                    if(rs.getString(subject).equals("subject0"))//if the owner present is subject0
+                    {
+                        if(rs.next())//see if anyone else owns the entity
+                        {
+                            return "NO";//if they do, return no
+                        }
+                    }
+                    else//the subject that owns the object is not subject 0 so...
+                    {
+                        return "NO";
+                    }
+                }
+            }
             // look up the grantee's rights
             if(checkRights(entityGrantedOn,granterGranting,"o").equals("OK") ||//if the granter is the owner OR the granter has the rights and has the copy right
                     checkRights(entityGrantedOn,granterGranting,rightToBeGranted).equals("OK") && checkRights(entityGrantedOn,granterGranting,"c").equals("OK"))
             {
-                String query = "INSERT INTO " + acm + " (" + subject + " ," + entity + " ," +  right + " ," + granter + ")" +
+                query = "INSERT INTO " + acm + " (" + subject + " ," + entity + " ," +  right + " ," + granter + ")" +
                         " VALUES ('" + grantee + "', '" + entityGrantedOn + "', '" + rightToBeGranted +"', '"+granterGranting + "');";
                 stmt.execute(query);
             ///INSERT INTO acm (subject,entity,right,granter) VALUES (grantee,entityGrantedOn,right,granter)
