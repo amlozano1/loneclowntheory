@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package loneclowntheory;
+
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -65,9 +65,7 @@ public class Main
             System.out.println("8 " + lct.revoke("subject0", "s1", "o", "o1", "C"));
             System.out.println("9 " + lct.revoke("s1", "s3", "r", "o1", "C"));
             System.out.print("10 ");
-            lct.removeSubject("s1");
             System.out.print("11 ");
-            lct.removeObject("o1");
 
             /////////////////////////////////////////////////////
             // Test cases for revoke and checkRights - Brandon //
@@ -161,6 +159,9 @@ public class Main
             System.out.println("Attempting to remove s1");
             lct.removeSubject("s1");
             printEntityTable(con, dbName);
+            System.out.println("Attempting to remove s1 again");
+            lct.removeSubject("s1");
+            printEntityTable(con, dbName);
             printACM(con, dbName);
             System.out.println("Attempting to remove s2");
             lct.removeSubject("s2");
@@ -171,6 +172,10 @@ public class Main
             printEntityTable(con, dbName);
             printACM(con, dbName);
             System.out.println("Attempting to remove o1");
+            lct.removeObject("o1");
+            printEntityTable(con, dbName);
+            printACM(con, dbName);
+            System.out.println("Attempting to remove o1 again");
             lct.removeObject("o1");
             printEntityTable(con, dbName);
             printACM(con, dbName);

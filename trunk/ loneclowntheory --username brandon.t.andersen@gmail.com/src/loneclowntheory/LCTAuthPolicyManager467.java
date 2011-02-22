@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package loneclowntheory;
+
 
 import java.sql.Connection;
 import java.sql.Statement;
@@ -14,7 +14,7 @@ import java.sql.SQLException;
  *
  * @author Brandon
  */
-public class LCTAuthPolicyManager467 implements AuthPolicyManager467
+public class LCTAuthPolicyManager467
 {
 
   private String dbms;
@@ -174,7 +174,7 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
 
       rs.close(); //close resultset
       stmt.close(); //close the db conn
-      
+
 //      }
     }
     catch (MySQLIntegrityConstraintViolationException e) //Predconition fails
@@ -212,7 +212,12 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
       //This also doesn't allow subject0 to be removed form the DB.
       if (!rs.next() || Name.equals(subject0))
       {
-        System.out.println("NO");
+          if(Name.equals(subject0))
+          {
+              System.out.println("NO! subject0 cannot be removed!");
+          }
+          else
+              System.out.println("NO, " + Name + " does not exsits.");
       }
       else
       {
@@ -220,7 +225,7 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
         {
           rs.deleteRow();
 
-          System.out.println("OK");
+          System.out.println("OK, " + Name + " exsits and is being removed.");
         }
       }
 
@@ -257,7 +262,7 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
       //would not allow for his removale by this function it is also checked here just in case.
       if (!rs.next() || Name.equals(subject0))
       {
-        System.out.println("No");
+        System.out.println("No, " + Name + " does not exsits.");
       }
       else
       {
@@ -265,7 +270,7 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
         {
           rs.deleteRow();
 
-          System.out.println("OK");
+          System.out.println("OK, " + Name + " exsits and is being removed.");
         }
       }
 
