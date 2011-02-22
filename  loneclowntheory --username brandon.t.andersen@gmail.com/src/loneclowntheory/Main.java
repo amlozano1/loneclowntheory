@@ -69,6 +69,74 @@ public class Main
             System.out.print("11 ");
             lct.removeObject("o1");
 
+            /////////////////////////////////////////////////////
+            // Test cases for revoke and checkRights - Brandon //
+            /////////////////////////////////////////////////////
+            lct.newSubject("s100");
+            lct.newSubject("s101");
+            lct.newSubject("s102");
+            lct.newObject("o100");
+            lct.newObject("o101");
+
+            System.out.println("100 " + lct.revoke("subject0", "subject0", "o", "s100", "C")); // Check subject0 cannot have rights revoked
+            System.out.println("101 " + lct.grant("subject0", "s100", "o", "o100"));
+            System.out.println("102 " + lct.revoke("s100", "subject0", "o", "o100", "C"));
+            System.out.println("103 " + lct.grant("subject0", "subject0", "r", "o100"));
+            System.out.println("104 " + lct.revoke("s100", "subject0", "r", "o100", "C"));
+            System.out.println("105 " + lct.grant("s100", "s101", "r", "o100"));
+            System.out.println("106 " + lct.checkRights("o100", "s101", "r"));
+            System.out.println("107 " + lct.checkRights("o100", "s101", "o"));
+            System.out.println("108 " + lct.checkRights("o100", "s100", "o"));
+            System.out.println("109 " + lct.grant("s100", "s101", "c", "o100"));
+            System.out.println("110 " + lct.grant("s101", "s102", "r", "o100"));
+            System.out.println("111 " + lct.checkRights("o100", "s102", "r"));
+            System.out.println("112 " + lct.revoke("s101", "s102", "r", "o100", "N"));
+            System.out.println("113 " + lct.revoke("s100", "s102", "r", "o100", "N"));
+            System.out.println("114 " + lct.grant("s101", "s102", "r", "o100"));
+            System.out.println("115 " + lct.revoke("s100", "s101", "c", "o100", "N"));
+            System.out.println("116 " + lct.checkRights("o100", "s101", "c"));
+            System.out.println("117 " + lct.checkRights("o100", "s102", "r"));
+            System.out.println("118 " + lct.grant("s100", "s101", "c", "o100"));
+            System.out.println("119 " + lct.checkRights("o100", "s101", "c"));
+            System.out.println("120 " + lct.revoke("s100", "s101", "c", "o100", "C"));
+            System.out.println("121 " + lct.checkRights("o100", "s101", "c"));
+            System.out.println("122 " + lct.checkRights("o100", "s102", "r"));
+            System.out.println("123 " + lct.grant("s100", "s101", "c", "o100"));
+            System.out.println("124 " + lct.grant("s100", "s101", "d", "o100"));
+            System.out.println("125 " + lct.grant("s100", "s101", "t", "o100"));
+            System.out.println("126 " + lct.grant("s100", "s101", "r", "o100"));
+            System.out.println("127 " + lct.grant("s100", "s101", "u", "o100"));
+            System.out.println("128 " + lct.grant("s101", "s102", "d", "o100"));
+            System.out.println("129 " + lct.grant("s101", "s102", "t", "o100"));
+            System.out.println("130 " + lct.grant("s101", "s102", "r", "o100"));
+            System.out.println("131 " + lct.grant("s101", "s102", "u", "o100"));
+            System.out.println("133 " + lct.checkRights("o100", "s100", "o"));
+            System.out.println("134 " + lct.checkRights("o100", "s101", "c"));
+            System.out.println("135 " + lct.checkRights("o100", "s101", "d"));
+            System.out.println("136 " + lct.checkRights("o100", "s101", "t"));
+            System.out.println("137 " + lct.checkRights("o100", "s101", "r"));
+            System.out.println("138 " + lct.checkRights("o100", "s101", "u"));
+            System.out.println("139 " + lct.checkRights("o100", "s102", "d"));
+            System.out.println("140 " + lct.checkRights("o100", "s102", "t"));
+            System.out.println("141 " + lct.checkRights("o100", "s102", "r"));
+            System.out.println("142 " + lct.checkRights("o100", "s102", "u"));
+            System.out.println("143 " + lct.revoke("subject0", "s100", "o", "o100", "C"));
+            System.out.println("144 " + lct.checkRights("o100", "s100", "o"));
+            System.out.println("145 " + lct.checkRights("o100", "s101", "c"));
+            System.out.println("146 " + lct.checkRights("o100", "s101", "d"));
+            System.out.println("147 " + lct.checkRights("o100", "s101", "t"));
+            System.out.println("148 " + lct.checkRights("o100", "s101", "r"));
+            System.out.println("149 " + lct.checkRights("o100", "s101", "u"));
+            System.out.println("150 " + lct.checkRights("o100", "s102", "d"));
+            System.out.println("151 " + lct.checkRights("o100", "s102", "t"));
+            System.out.println("152 " + lct.checkRights("o100", "s102", "r"));
+            System.out.println("153 " + lct.checkRights("o100", "s102", "u"));
+            
+            ///////////////////////////////////////////////
+            // End Test cases for revoke and checkRights //
+            ///////////////////////////////////////////////
+
+
             con.close();
 
 //            System.out.println("Done.");
