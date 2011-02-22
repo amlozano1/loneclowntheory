@@ -99,13 +99,14 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
 
                     /////////////////////////////
                     //Add to acm table         //
-                    //subject 0 is root granter//
+                    //subject 0 is root owner  //
                     /////////////////////////////
 
                     query = "INSERT INTO " + dbName + "." + acm + " (`subject`, `entity`, `granter`, `right`) VALUES ('subject0', '" + subjectName + "', 'subject0', 'o')";
                     stmt.executeUpdate(query); //execute (insert the row)
 
-                    System.out.println("newSubject() completed successfully");
+                    System.out.println("newSubject(" + subjectName +
+                            ") completed successfully");
                 }
             }
 
@@ -126,41 +127,60 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
      */
     public void newObject(String objectName)
     {
+        //wrapper for statement
         Statement stmt = null;
+        //query skeleton
         String query = "SELECT * FROM " + dbName + "." + entityTable + " WHERE " + entityName + "= '" + objectName + "'";
 
         try
         {
+            //open communication with db
             stmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
 
+            //run the query
             ResultSet rs = stmt.executeQuery(query);
 
-            //Precondition: subject does not already exist
-            if (rs.next())
+            //Precondition: object does not already exist
+            if (rs.next()) //if this returns false, recordset is empty
             {
-                System.out.println("NO");
+                //output error message noting failed precondition
+                System.out.println("error in newObject(): Precondition failed" +
+                        " Object " + objectName + " already exists!");
             }
-            else
+            else //otherwise (if precondition passes)
             {
+                //and the recordset is updatable
                 if (rs.getConcurrency() == ResultSet.CONCUR_UPDATABLE)
                 {
-                    rs.moveToInsertRow();
-                    rs.updateString(entityName, objectName);
-                    rs.updateString(subjectOrObject, "0");
-                    rs.insertRow();
-                    rs.close();
+                    //////////////////////
+                    //Add to entitytable//
+                    //////////////////////
+                    
+                    rs.moveToInsertRow(); //move cursor to insert row
+                    rs.updateString(entityName, objectName); //plug in name
+                    rs.updateString(subjectOrObject, "0"); //signify as object
+                    rs.insertRow(); //complete the insert
+
+                    //////////////////////////
+                    //Add to acmtable       //
+                    //subject0 is root owner//
+                    //////////////////////////
 
                     query = "INSERT INTO " + dbName + "." + acm + " (`subject`, `entity`, `granter`, `right`) VALUES ('subject0', '" + objectName + "', 'subject0', 'o')";
                     stmt.executeUpdate(query);
-                    stmt.close();
+                    
 
-                    System.out.println("OK");
+                    System.out.println("newObject(" + objectName +
+                            ") completed successfully");
                 }
             }
+            
+            rs.close(); //close resultset
+            stmt.close(); //close the db conn
         }
         catch (SQLException e)
         {
-            System.out.println(e);
+            System.out.println(e); //spit out sql error
         }
     }
 
