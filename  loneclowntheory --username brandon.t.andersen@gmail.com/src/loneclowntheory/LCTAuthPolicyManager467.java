@@ -361,6 +361,7 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
      * @param E_Name    The entity on which Y's right is being revoked
      * @param cascades  "N" for without cascades, "C" for with cascades
      * @return          "OK" on success, "NO" otherwise
+     * @author Brandon
      */
     public String revoke(String X, String Y, String R, String E_Name, String cascades)
     {
