@@ -37,13 +37,14 @@ public class Main
             //newSubject and newObject test cases//
             ///////////////////////////////////////
 
-            lct.newSubject("s1"); //should pass
+            lct.newSubject("s1"); //should pass 1st run, else fail
             lct.newSubject("s1"); //should fail
-            lct.newSubject("s2"); //pass
-            lct.newSubject("s3"); //pass
-            lct.newObject("o1");
-            lct.newObject("o2");
-            lct.newObject("o3");
+            lct.newSubject("s2"); //pass 1st run, else fail
+            lct.newSubject("s3"); //pass 1st run, else fail
+            lct.newObject("o1"); //should pass 1st run, else fail
+            lct.newObject("o1"); //should fail
+            lct.newObject("o2"); //pass 1st run, else fail
+            lct.newObject("o3"); //pass 1st run, else fail
 
 
             System.out.println("1 " + lct.checkRights("s1", "subject0", "o"));
