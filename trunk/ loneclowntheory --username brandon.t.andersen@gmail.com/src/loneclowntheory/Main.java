@@ -4,7 +4,11 @@
  */
 package loneclowntheory;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 /**
  *
@@ -38,14 +42,15 @@ public class Main
             ///////////////////////////////////////
 
             lct.newSubject("s1"); //should pass 1st run, else fail
-            lct.newSubject("s1"); //should fail
+            lct.newSubject("s1"); //should fail - already exists
             lct.newSubject("s2"); //pass 1st run, else fail
             lct.newSubject("s3"); //pass 1st run, else fail
             lct.newObject("o1"); //should pass 1st run, else fail
-            lct.newObject("o1"); //should fail
+            lct.newObject("o1"); //should fail - aready exists
             lct.newObject("o2"); //pass 1st run, else fail
             lct.newObject("o3"); //pass 1st run, else fail
 
+            ///////////////////////////////////////
 
             System.out.println("1 " + lct.checkRights("s1", "subject0", "o"));
             System.out.println("2 " + lct.checkRights("o1", "subject0", "o"));
