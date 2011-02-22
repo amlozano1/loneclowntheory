@@ -568,8 +568,8 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
         } // Catch block for SQLExceptions
         catch (SQLException e)
         {
-          //Debug print
-          //System.out.println("In Revoke: " + e);
+          // Debug print
+          // System.out.println("In Revoke: " + e);
           // Failure, so return string set to "NO"
           rtnStr = "NO";
         }
@@ -629,8 +629,8 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
     } // Catch any SQLExceptions
     catch (SQLException e)
     {
-      //Debug print
-      //System.out.println("In checkRights: " + e);
+      // Debug print
+      // System.out.println("In checkRights: " + e);
       // Failure, so return string set to "NO"
       rtnStr = "NO";
     }
