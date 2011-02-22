@@ -25,7 +25,7 @@ public class Main
         String user = "root";
         String pwd = "root";
         String dbms = "mysql";
-        String dbName = "loneclowntheory";
+        String dbName = "LoneClownTheory";
 
         try
         {
