@@ -131,13 +131,12 @@ public class Main
             System.out.println("151 " + lct.checkRights("o100", "s102", "t"));
             System.out.println("152 " + lct.checkRights("o100", "s102", "r"));
             System.out.println("153 " + lct.checkRights("o100", "s102", "u"));
-            
+
             ///////////////////////////////////////////////
             // End Test cases for revoke and checkRights //
             ///////////////////////////////////////////////
 
 
-            con.close();
 
 //            System.out.println("Done.");
 //            printEntityTable(con, dbName);
@@ -148,12 +147,68 @@ public class Main
 //            printACM(con, dbName);
 //            lct.grant("s1", "subject0", "r", "o1");
 //            printEntityTable(con, dbName);
-//            System.out.println("Attempting to remove subject0, s1 and 01");
-//
-//            lct.removeSubject("subject0");
-//            lct.removeSubject("s1");
-//            lct.removeObject("o1");
-//            printEntityTable(con, dbName);
+
+/******************************************************/
+/        removeSubject and removeObject test cases     /
+/******************************************************/
+
+            printEntityTable(con, dbName);
+            printACM(con, dbName);
+            System.out.println("Attempting to remove subject0");
+            lct.removeSubject("subject0");
+            printEntityTable(con, dbName);
+            printACM(con, dbName);
+            System.out.println("Attempting to remove s1");
+            lct.removeSubject("s1");
+            printEntityTable(con, dbName);
+            printACM(con, dbName);
+            System.out.println("Attempting to remove s2");
+            lct.removeSubject("s2");
+            printEntityTable(con, dbName);
+            printACM(con, dbName);
+            System.out.println("Attempting to remove s3");
+            lct.removeSubject("s3");
+            printEntityTable(con, dbName);
+            printACM(con, dbName);
+            System.out.println("Attempting to remove o1");
+            lct.removeObject("o1");
+            printEntityTable(con, dbName);
+            printACM(con, dbName);
+            System.out.println("Attempting to remove o2");
+            lct.removeObject("o2");
+            printEntityTable(con, dbName);
+            printACM(con, dbName);
+            System.out.println("Attempting to remove o3");
+            lct.removeObject("o3");
+            printEntityTable(con, dbName);
+            printACM(con, dbName);
+            System.out.println("Attempting to remove s100");
+            lct.removeSubject("s100");
+            printEntityTable(con, dbName);
+            printACM(con, dbName);
+            System.out.println("Attempting to remove s101");
+            lct.removeSubject("s101");
+            printEntityTable(con, dbName);
+            printACM(con, dbName);
+            System.out.println("Attempting to remove s102");
+            lct.removeSubject("s102");
+            printEntityTable(con, dbName);
+            printACM(con, dbName);
+            System.out.println("Attempting to remove o100");
+            lct.removeObject("o100");
+            printEntityTable(con, dbName);
+            printACM(con, dbName);
+            System.out.println("Attempting to remove o101");
+            lct.removeObject("o101");
+            printEntityTable(con, dbName);
+            printACM(con, dbName);
+
+/******************************************************/
+/   End of removeSubject and removeObject test cases   /
+/******************************************************/
+
+
+            con.close();
         }
         catch (SQLException e)
         {
