@@ -64,43 +64,60 @@ public class LCTAuthPolicyManager467 implements AuthPolicyManager467
      */
     public void newSubject(String subjectName)
     {
-        Statement stmt = null;
+        Statement stmt = null; //SQL statement wrapper
+        //string to build the query in
         String query = "SELECT * FROM " + dbName + "." + entityTable + " WHERE " + entityName + "= '" + subjectName + "'";
 
         try
         {
+            //open connection to db
             stmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
 
+            //query
             ResultSet rs = stmt.executeQuery(query);
 
             //Precondition: subject does not already exist
-            if (rs.next())
+            if (rs.next()) //returns false if resultset size is 0
             {
-                System.out.println("NO");
+                //output error message noting failed precondition
+                System.out.println("error in newSubject(): Precondition failed" +
+                        " Subject " + subjectName + " already exists!");
+
             }
-            else
+            else //otherwise (precondition passed - add subject)
             {
+                //as long as the resultset is updatable
                 if (rs.getConcurrency() == ResultSet.CONCUR_UPDATABLE)
                 {
-                    rs.moveToInsertRow();
-                    rs.updateString(entityName, subjectName);
-                    rs.updateString(subjectOrObject, "1");
-                    rs.insertRow();
-                    rs.close();
+                    //////////////////////
+                    //Add to entitytable//
+                    //////////////////////
+                    rs.moveToInsertRow(); //move cursor to updatable row
+                    rs.updateString(entityName, subjectName); //add name
+                    rs.updateString(subjectOrObject, "1"); //signify subejct
+                    rs.insertRow(); //insert the row
+
+                    /////////////////////////////
+                    //Add to acm table         //
+                    //subject 0 is root granter//
+                    /////////////////////////////
 
                     query = "INSERT INTO " + dbName + "." + acm + " (`subject`, `entity`, `granter`, `right`) VALUES ('subject0', '" + subjectName + "', 'subject0', 'o')";
-                    stmt.executeUpdate(query);
-                    stmt.close();
+                    stmt.executeUpdate(query); //execute (insert the row)
 
-                    System.out.println("OK");
+                    System.out.println("newSubject() completed successfully");
                 }
             }
+
+            rs.close(); //close the recordset
+            stmt.close(); //close the statement
         }
         catch (SQLException e)
         {
-            System.out.println(e);
+            System.out.println(e); //spit out SQL error
         }
     }
+
 
     /**
      * Creates a new object.  Initially, subject "subject0" is the "owner" of all new entities.

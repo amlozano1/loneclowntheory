@@ -33,9 +33,14 @@ public class Main
 
             lct = new LCTAuthPolicyManager467(con, dbms, dbName);
 
-            lct.newSubject("s1");
-            lct.newSubject("s2");
-            lct.newSubject("s3");
+            ///////////////////////////////////////
+            //newSubject and newObject test cases//
+            ///////////////////////////////////////
+
+            lct.newSubject("s1"); //should pass
+            lct.newSubject("s1"); //should fail
+            lct.newSubject("s2"); //pass
+            lct.newSubject("s3"); //pass
             lct.newObject("o1");
             lct.newObject("o2");
             lct.newObject("o3");
