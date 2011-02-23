@@ -50,7 +50,22 @@ public class Main
             lct.newObject("o2"); //pass 1st run, else fail
             lct.newObject("o3"); //pass 1st run, else fail
 
-            ///////////////////////////////////////
+            /////////////////////////////////
+            // Grant and Revoke test cases //
+            /////////////////////////////////
+            System.out.println("GRANT and TAKE");
+            System.out.println(lct.grant("subject0", "s1", "o", "o1")); // "OK"
+            System.out.println(lct.grant("s1", "s2", "o", "o1")); // "NO"
+            System.out.println(lct.grant("s1", "s2", "d", "o1")); // "OK"
+            System.out.println(lct.take("s2", "c", "o1")); // "OK"
+            System.out.println(lct.take("s2", "r", "o1")); // "NO"
+            System.out.println(lct.grant("s1", "s2", "t", "o1")); // "OK"
+            System.out.println(lct.take("s2", "r", "o1")); // "OK"
+            System.out.println(lct.take("s2", "u", "o1")); // "OK"
+            System.out.println(lct.grant("s2", "s3", "d", "o1")); // "OK"
+            System.out.println(lct.grant("s2", "s3", "r", "o1")); // "OK"
+            System.out.println(lct.grant("s2", "s3", "u", "o1")); // "OK"
+            System.out.println("END GRANT and TAKE");
 
             /////////////////////////////////////////////////////
             // Test cases for revoke and checkRights - Brandon //
@@ -87,7 +102,7 @@ public class Main
             System.out.println("123 " + lct.grant("s100", "s101", "c", "o100")); // "OK"
             System.out.println("124 " + lct.grant("s100", "s101", "d", "o100")); // "OK"
             System.out.println("125 " + lct.grant("s100", "s101", "t", "o100")); // "OK"
-            System.out.println("126 " + lct.grant("s100", "s101", "r", "o100")); // "NO" - Already has it from 105
+            
             System.out.println("127 " + lct.grant("s100", "s101", "u", "o100")); // "OK"
             System.out.println("128 " + lct.grant("s101", "s102", "d", "o100")); // "OK"
             System.out.println("129 " + lct.grant("s101", "s102", "t", "o100")); // "OK"
@@ -233,14 +248,14 @@ public class Main
             Statement stmt = con.createStatement();
             ResultSet result = stmt.executeQuery("SELECT * FROM " + LCTAuthPolicyManager467.acm);
             System.out.println("______________________________________________________________");
-            System.out.println("s\te\tr\tu\to\tc\td");
+            System.out.println("subj\tent\tgranter\tright\ttimestamp");
             while (result.next())
             {
                 System.out.print(result.getString(LCTAuthPolicyManager467.subject));
                 System.out.print("\t" + result.getString(LCTAuthPolicyManager467.entity));
                 System.out.print("\t" + result.getString(LCTAuthPolicyManager467.granter));
                 System.out.print("\t" + result.getString(LCTAuthPolicyManager467.right));
-                System.out.print("\t" + result.getString(LCTAuthPolicyManager467.timestamp));
+                System.out.println("\t" + result.getString(LCTAuthPolicyManager467.timestamp));
             }
             System.out.println("______________________________________________________________");
         }
