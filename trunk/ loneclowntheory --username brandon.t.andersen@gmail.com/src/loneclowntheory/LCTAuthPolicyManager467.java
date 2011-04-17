@@ -7,6 +7,7 @@ package loneclowntheory;
 import java.sql.Connection;
 import java.sql.Statement;
 import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
+import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -14,7 +15,7 @@ import java.sql.SQLException;
  *
  * @author Brandon
  */
-public class LCTAuthPolicyManager467
+public class LCTAuthPolicyManager467 implements AuthPolicyManager467
 {
     private String dbms;
     private String dbName;
@@ -41,6 +42,27 @@ public class LCTAuthPolicyManager467
     public static final String subjectOrObject = entityTable + ".subject_or_object";
     //define other constants
     public static final String subject0 = "subject0";
+
+    public LCTAuthPolicyManager467()
+    {
+        super();
+
+        this.dbms = "mysql";
+        this.dbName = "LoneClownTheory";
+
+        try
+        {
+            con = DriverManager.getConnection("jdbc:mysql://localhost:3306", "root", "root");
+            String query = "USE " + dbName;
+            Statement stmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+            stmt.execute(query);
+            con.setAutoCommit(true);
+        }
+        catch (Exception e)
+        {
+            System.out.println("In LCTAuthPolicyManager467 Constructor: " + e);
+        }
+    }
 
     public LCTAuthPolicyManager467(Connection connArg, String dbmsArg, String dbNameArg)
     {
